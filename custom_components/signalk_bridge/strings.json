@@ -1,0 +1,89 @@
+{
+  "title": "SignalK Bridge",
+  "config": {
+    "abort": {
+      "already_configured": "This SignalK server is already configured."
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to SignalK server. Please check the URL and ensure the server is running.",
+      "auth_failed": "Authentication failed. Please approve the access request in the SignalK Admin UI and try again."
+    },
+    "step": {
+      "user": {
+        "title": "SignalK Bridge Setup",
+        "description": "Checking for SignalK HA App..."
+      },
+      "choose_server": {
+        "title": "SignalK Server Detected",
+        "description": "A SignalK App was detected and is running on this system. Would you like to use it?",
+        "data": {
+          "use_addon": "Use the installed SignalK App"
+        }
+      },
+      "manual_url": {
+        "title": "SignalK Server URL",
+        "description": "Enter the base URL of your SignalK server.",
+        "data": {
+          "base_url": "SignalK Server URL"
+        }
+      },
+      "auth": {
+        "title": "Authorize with SignalK",
+        "description": "An access request has been sent to the SignalK server at {base_url}.\n\nPlease open the SignalK Admin UI → Security → Access Requests and **approve** the request from \"Home Assistant SignalK Bridge\".\n\nOnce approved, click Submit below.",
+        "data": {}
+      },
+      "prefix": {
+        "title": "Entity Prefix",
+        "description": "Choose a prefix for entity IDs created by this integration. For example, with prefix 'signalk', a sensor for navigation.speedOverGround will have entity ID 'sensor.signalk_navigation_speedoverground'.",
+        "data": {
+          "entity_prefix": "Entity ID prefix"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Cannot connect to SignalK server at the provided URL."
+    },
+    "step": {
+      "init": {
+        "title": "SignalK Bridge Options",
+        "description": "Configure the SignalK Bridge connection.",
+        "data": {
+          "base_url": "SignalK Server URL",
+          "entity_prefix": "Entity ID prefix"
+        }
+      }
+    }
+  },
+  "services": {
+    "put_value": {
+      "name": "PUT value to SignalK",
+      "description": "Send a PUT request to a SignalK path for vessel self. Use this to control devices (e.g. switch a light, set autopilot heading).",
+      "fields": {
+        "path": {
+          "name": "Path",
+          "description": "The SignalK path to PUT the value to (e.g. 'electrical.switches.anchorLight.state')."
+        },
+        "value": {
+          "name": "Value",
+          "description": "The value to set. Can be a number, string, boolean, or object."
+        }
+      }
+    },
+    "post_delta": {
+      "name": "POST delta to SignalK",
+      "description": "Send a delta update for a SignalK path for vessel self. Use this to publish sensor data back to SignalK.",
+      "fields": {
+        "path": {
+          "name": "Path",
+          "description": "The SignalK path to send the delta for (e.g. 'environment.inside.cabin.temperature')."
+        },
+        "value": {
+          "name": "Value",
+          "description": "The value to send. Must be in SI units as per the SignalK specification."
+        }
+      }
+    }
+  }
+}

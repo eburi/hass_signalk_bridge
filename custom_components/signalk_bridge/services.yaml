@@ -1,0 +1,25 @@
+put_value:
+  fields:
+    path:
+      required: true
+      example: "electrical.switches.anchorLight.state"
+      selector:
+        text:
+    value:
+      required: true
+      example: 1
+      selector:
+        object:
+
+post_delta:
+  fields:
+    path:
+      required: true
+      example: "environment.inside.cabin.temperature"
+      selector:
+        text:
+    value:
+      required: true
+      example: 295.15
+      selector:
+        object:

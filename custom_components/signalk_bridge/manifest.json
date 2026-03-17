@@ -1,0 +1,16 @@
+{
+  "domain": "signalk_bridge",
+  "name": "SignalK Bridge",
+  "codeowners": ["@eburi"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/eburi/hass_signalk_bridge",
+  "integration_type": "hub",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/eburi/hass_signalk_bridge/issues",
+  "requirements": [
+    "websockets>=12.0",
+    "httpx>=0.25.0"
+  ],
+  "version": "0.1.0"
+}
