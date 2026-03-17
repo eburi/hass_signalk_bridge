@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- HA blue gradient -->
+    <linearGradient id="haGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#41BDF5"/>
+      <stop offset="100%" stop-color="#018BC5"/>
+    </linearGradient>
+    <!-- SignalK green gradient -->
+    <linearGradient id="skGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4CAF50"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <!-- Bridge arch gradient -->
+    <linearGradient id="bridgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#41BDF5"/>
+      <stop offset="35%" stop-color="#35A0D8"/>
+      <stop offset="65%" stop-color="#3A9858"/>
+      <stop offset="100%" stop-color="#4CAF50"/>
+    </linearGradient>
+    <!-- Water gradient -->
+    <linearGradient id="waterGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0288D1" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#0288D1" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0288D1" stop-opacity="0.3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="124" fill="#1C2333"/>
+  <circle cx="128" cy="128" r="120" fill="none" stroke="#2A3A52" stroke-width="1.5"/>
+
+  <!-- Water waves at bottom -->
+  <path d="M30 175 Q55 165, 80 175 T130 175 T180 175 T230 175" 
+        fill="none" stroke="url(#waterGrad)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M25 185 Q50 175, 75 185 T125 185 T175 185 T225 185" 
+        fill="none" stroke="url(#waterGrad)" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <path d="M35 195 Q60 187, 85 195 T135 195 T185 195 T235 195" 
+        fill="none" stroke="url(#waterGrad)" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+
+  <!-- Bridge structure -->
+  <!-- Main arch -->
+  <path d="M42 160 Q128 60, 214 160" 
+        fill="none" stroke="url(#bridgeGrad)" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Bridge deck (road surface) -->
+  <rect x="38" y="158" width="180" height="6" rx="3" fill="url(#bridgeGrad)" opacity="0.9"/>
+  
+  <!-- Bridge pillars -->
+  <rect x="52" y="158" width="5" height="28" rx="2" fill="#41BDF5" opacity="0.8"/>
+  <rect x="199" y="158" width="5" height="28" rx="2" fill="#4CAF50" opacity="0.8"/>
+  
+  <!-- Vertical suspension cables -->
+  <line x1="75" y1="120" x2="75" y2="158" stroke="url(#bridgeGrad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="100" y1="96" x2="100" y2="158" stroke="url(#bridgeGrad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="128" y1="85" x2="128" y2="158" stroke="url(#bridgeGrad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="156" y1="96" x2="156" y2="158" stroke="url(#bridgeGrad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="181" y1="120" x2="181" y2="158" stroke="url(#bridgeGrad)" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- HA symbol (left side) - simplified house -->
+  <g transform="translate(52, 92)">
+    <!-- House shape -->
+    <path d="M0 22 L16 8 L32 22 L32 38 L0 38 Z" 
+          fill="url(#haGrad)" opacity="0.95"/>
+    <!-- Door -->
+    <rect x="12" y="26" width="8" height="12" rx="1" fill="#1C2333" opacity="0.7"/>
+    <!-- Window -->
+    <rect x="5" y="18" width="6" height="5" rx="1" fill="#1C2333" opacity="0.5"/>
+    <rect x="21" y="18" width="6" height="5" rx="1" fill="#1C2333" opacity="0.5"/>
+  </g>
+
+  <!-- SignalK symbol (right side) - stylized S/K with signal waves -->
+  <g transform="translate(172, 92)">
+    <!-- K letter stylized -->
+    <text x="8" y="34" font-family="Arial, Helvetica, sans-serif" font-weight="bold" 
+          font-size="32" fill="url(#skGrad)" text-anchor="middle" opacity="0.95">K</text>
+    <!-- Signal waves -->
+    <path d="M22 12 Q28 16, 22 20" fill="none" stroke="#4CAF50" stroke-width="1.5" opacity="0.6"/>
+    <path d="M26 8 Q34 16, 26 24" fill="none" stroke="#4CAF50" stroke-width="1.5" opacity="0.4"/>
+    <path d="M30 4 Q40 16, 30 28" fill="none" stroke="#4CAF50" stroke-width="1.5" opacity="0.25"/>
+  </g>
+
+  <!-- Data flow dots along the bridge -->
+  <circle cx="85" cy="157" r="2.5" fill="#41BDF5" opacity="0.8">
+    <animate attributeName="cx" values="85;171" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="fill" values="#41BDF5;#4CAF50" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.9;0.5;0.9" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="171" cy="157" r="2.5" fill="#4CAF50" opacity="0.8">
+    <animate attributeName="cx" values="171;85" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="fill" values="#4CAF50;#41BDF5" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.9;0.5;0.9" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Small vessel silhouette in the water under the bridge -->
+  <g transform="translate(108, 175)" opacity="0.5">
+    <path d="M0 8 L4 0 L6 6 L20 6 L24 8 Z" fill="#B0BEC5"/>
+    <line x1="6" y1="0" x2="6" y2="6" stroke="#B0BEC5" stroke-width="1"/>
+  </g>
+
+  <!-- Text label at bottom -->
+  <text x="128" y="224" font-family="Arial, Helvetica, sans-serif" font-weight="600" 
+        font-size="14" fill="#8899AA" text-anchor="middle" letter-spacing="2">SIGNALK BRIDGE</text>
+</svg>

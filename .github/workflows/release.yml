@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+permissions: {}
+
+jobs:
+  release:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Adjust version number
+        shell: bash
+        run: |
+          version="${{ github.event.release.tag_name }}"
+          version="${version#v}"
+          jq --arg version "$version" '.version = $version' \
+            "${{ github.workspace }}/custom_components/signalk_bridge/manifest.json" > tmp.json
+          mv tmp.json "${{ github.workspace }}/custom_components/signalk_bridge/manifest.json"
+
+      - name: Create zip for release
+        shell: bash
+        run: |
+          cd "${{ github.workspace }}/custom_components/signalk_bridge"
+          zip -r "${{ github.workspace }}/signalk_bridge.zip" .
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: signalk_bridge.zip
