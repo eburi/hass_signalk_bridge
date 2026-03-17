@@ -15,6 +15,7 @@ from custom_components.signalk_bridge.unit_mapping import (
 # convert_value
 # ===================================================================
 
+
 class TestConvertValue:
     def test_none_returns_none(self):
         mapping = SensorMapping(conversion_factor=100.0)
@@ -50,6 +51,7 @@ class TestConvertValue:
     def test_rad_to_degrees(self):
         mapping = UNIT_MAPPING["rad"]
         import math
+
         result = convert_value(math.pi, mapping)
         assert abs(result - 180.0) < 0.01
 
@@ -71,6 +73,7 @@ class TestConvertValue:
 # ===================================================================
 # get_sensor_mapping
 # ===================================================================
+
 
 class TestGetSensorMapping:
     def test_kelvin_unit(self):
@@ -138,6 +141,7 @@ class TestGetSensorMapping:
 # _match_path_pattern
 # ===================================================================
 
+
 class TestMatchPathPattern:
     def test_exact_match(self):
         assert _match_path_pattern("a.b.c", "a.b.c") is True
@@ -155,21 +159,28 @@ class TestMatchPathPattern:
         assert _match_path_pattern("a.x.y.c", "a.*.*.c") is True
 
     def test_battery_soc_pattern(self):
-        assert _match_path_pattern(
-            "electrical.batteries.house.capacity.stateOfCharge",
-            "electrical.batteries.*.capacity.stateOfCharge",
-        ) is True
+        assert (
+            _match_path_pattern(
+                "electrical.batteries.house.capacity.stateOfCharge",
+                "electrical.batteries.*.capacity.stateOfCharge",
+            )
+            is True
+        )
 
     def test_battery_soc_different_id(self):
-        assert _match_path_pattern(
-            "electrical.batteries.starter.capacity.stateOfCharge",
-            "electrical.batteries.*.capacity.stateOfCharge",
-        ) is True
+        assert (
+            _match_path_pattern(
+                "electrical.batteries.starter.capacity.stateOfCharge",
+                "electrical.batteries.*.capacity.stateOfCharge",
+            )
+            is True
+        )
 
 
 # ===================================================================
 # path_to_friendly_name
 # ===================================================================
+
 
 class TestPathToFriendlyName:
     def test_speed_over_ground(self):
@@ -213,6 +224,7 @@ class TestPathToFriendlyName:
 # UNIT_MAPPING completeness
 # ===================================================================
 
+
 class TestUnitMappingCompleteness:
     """Ensure all unit mappings are well-formed."""
 
@@ -231,6 +243,7 @@ class TestUnitMappingCompleteness:
 
     def test_rad_conversion_approximately_correct(self):
         import math
+
         m = UNIT_MAPPING["rad"]
         expected = 180.0 / math.pi
         assert abs(m.conversion_factor - expected) < 0.0001

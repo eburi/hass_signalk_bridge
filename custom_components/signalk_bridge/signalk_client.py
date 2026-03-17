@@ -257,9 +257,7 @@ class SignalKClient:
                             _LOGGER.error("Device access DENIED")
                             return None
 
-                        _LOGGER.error(
-                            "Unexpected result: permission=%s", permission
-                        )
+                        _LOGGER.error("Unexpected result: permission=%s", permission)
                         return None
 
             except Exception as exc:
@@ -334,7 +332,10 @@ class SignalKClient:
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.put(url, json=body, headers=headers)
-                return {"status": resp.status_code, "body": resp.json() if resp.text else {}}
+                return {
+                    "status": resp.status_code,
+                    "body": resp.json() if resp.text else {},
+                }
         except Exception as exc:
             _LOGGER.error("PUT %s failed: %s", path, exc)
             return {"status": 500, "error": str(exc)}
@@ -384,9 +385,7 @@ class SignalKClient:
                 if resp.status_code in (200, 202):
                     _LOGGER.debug("Sent value via REST PUT for %s", path)
                     return True
-                _LOGGER.error(
-                    "REST PUT for %s returned %d", path, resp.status_code
-                )
+                _LOGGER.error("REST PUT for %s returned %d", path, resp.status_code)
                 return False
         except Exception as exc:
             _LOGGER.error("REST PUT for %s failed: %s", path, exc)
@@ -398,9 +397,7 @@ class SignalKClient:
 
     async def run(
         self,
-        on_delta: Callable[
-            [dict[str, Any]], Coroutine[Any, Any, None]
-        ],
+        on_delta: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
         on_connect: Callable[[], Coroutine[Any, Any, None]] | None = None,
         on_disconnect: Callable[[], Coroutine[Any, Any, None]] | None = None,
     ) -> None:
@@ -437,9 +434,7 @@ class SignalKClient:
             delay = RECONNECT_DELAYS[min(delay_index, len(RECONNECT_DELAYS) - 1)]
             _LOGGER.info("Reconnecting in %ds…", delay)
             try:
-                await asyncio.wait_for(
-                    self._stop_event.wait(), timeout=delay
-                )
+                await asyncio.wait_for(self._stop_event.wait(), timeout=delay)
                 break  # stop was called during delay
             except asyncio.TimeoutError:
                 pass

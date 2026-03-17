@@ -26,7 +26,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .classifier import ClassificationResult, path_to_friendly_name
 from .const import STALE_TIMEOUT_S
-from .unit_mapping import SensorMapping, convert_value, get_sensor_mapping
+from .unit_mapping import convert_value, get_sensor_mapping
 
 _LOGGER = logging.getLogger(__name__)
 

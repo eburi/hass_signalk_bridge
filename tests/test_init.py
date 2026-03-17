@@ -1,8 +1,7 @@
 """Tests for __init__.py — Hub, services, setup/teardown (refactored architecture)."""
 
 import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Any
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -30,7 +29,6 @@ from custom_components.signalk_bridge.const import (
     CONF_ENTITY_PREFIX,
     CONF_PUBLISH_PROFILE,
     CONF_TOKEN,
-    DOMAIN,
     PublishProfile,
     SignalKDomain,
 )
@@ -38,9 +36,11 @@ from custom_components.signalk_bridge.const import (
 
 def _make_entry(data=None, options=None):
     from homeassistant.config_entries import ConfigEntry
+
     return ConfigEntry(
         entry_id="test_entry_id",
-        data=data or {
+        data=data
+        or {
             CONF_BASE_URL: "http://localhost:3000",
             CONF_TOKEN: "test-token",
             CONF_CLIENT_ID: "test-client-id",
@@ -53,6 +53,7 @@ def _make_entry(data=None, options=None):
 
 def _make_hass():
     from homeassistant.core import HomeAssistant
+
     hass = HomeAssistant()
     hass.config_entries = MagicMock()
     hass.config_entries.async_update_entry = MagicMock()
@@ -75,6 +76,7 @@ def _make_hub(hass=None, entry=None):
 # ===================================================================
 # Hub initialization
 # ===================================================================
+
 
 class TestHubInit:
     def test_hub_creates_client(self):
@@ -132,6 +134,7 @@ class TestHubInit:
 # Platform registration
 # ===================================================================
 
+
 class TestPlatformRegistration:
     @pytest.mark.asyncio
     async def test_sensor_platform_registration(self):
@@ -158,7 +161,10 @@ class TestPlatformRegistration:
     async def test_diagnostic_sensors_created(self):
         hub = _make_hub()
         added = []
-        mock_add = lambda entities: added.extend(entities)
+
+        def mock_add(entities):
+            added.extend(entities)
+
         await hub.register_sensor_platform(mock_add)
         # Should have 2 diagnostic sensors (connection + version)
         assert len(added) == 2
@@ -167,6 +173,7 @@ class TestPlatformRegistration:
 # ===================================================================
 # Delta processing
 # ===================================================================
+
 
 class TestDeltaProcessing:
     @pytest.mark.asyncio
@@ -180,11 +187,13 @@ class TestDeltaProcessing:
         hub._client.get_path_meta = AsyncMock(return_value={})
 
         delta = {
-            "updates": [{
-                "source": {"label": "nmea2000"},
-                "timestamp": "2024-01-01T00:00:00Z",
-                "values": [{"path": "navigation.speedOverGround", "value": 5.0}],
-            }]
+            "updates": [
+                {
+                    "source": {"label": "nmea2000"},
+                    "timestamp": "2024-01-01T00:00:00Z",
+                    "values": [{"path": "navigation.speedOverGround", "value": 5.0}],
+                }
+            ]
         }
 
         await hub._on_delta(delta)
@@ -204,17 +213,25 @@ class TestDeltaProcessing:
         hub._client.get_path_meta = AsyncMock(return_value={})
 
         # First delta — creates sensor
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "navigation.speedOverGround", "value": 1.0}]}]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {"values": [{"path": "navigation.speedOverGround", "value": 1.0}]}
+                ]
+            }
+        )
         assert len(added) == 1
         sensor = added[0]
         sensor._ready = True
 
         # Second delta — updates (policy engine will evaluate)
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "navigation.speedOverGround", "value": 99.0}]}]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {"values": [{"path": "navigation.speedOverGround", "value": 99.0}]}
+                ]
+            }
+        )
         assert len(added) == 1  # no new entities
 
     @pytest.mark.asyncio
@@ -229,12 +246,16 @@ class TestDeltaProcessing:
         hub._client.get_path_meta = AsyncMock(return_value={})
 
         delta = {
-            "updates": [{
-                "values": [{
-                    "path": "navigation.position",
-                    "value": {"latitude": 51.5, "longitude": -1.2},
-                }],
-            }]
+            "updates": [
+                {
+                    "values": [
+                        {
+                            "path": "navigation.position",
+                            "value": {"latitude": 51.5, "longitude": -1.2},
+                        }
+                    ],
+                }
+            ]
         }
 
         await hub._on_delta(delta)
@@ -248,12 +269,16 @@ class TestDeltaProcessing:
         hub._tracker_add_entities = MagicMock()
 
         delta = {
-            "updates": [{
-                "meta": [{
-                    "path": "navigation.sog",
-                    "value": {"units": "m/s", "description": "Speed OG"},
-                }],
-            }]
+            "updates": [
+                {
+                    "meta": [
+                        {
+                            "path": "navigation.sog",
+                            "value": {"units": "m/s", "description": "Speed OG"},
+                        }
+                    ],
+                }
+            ]
         }
         await hub._on_delta(delta)
         assert "navigation.sog" in hub._meta_cache
@@ -266,9 +291,7 @@ class TestDeltaProcessing:
         hub._tracker_add_entities = MagicMock()
         hub._client.get_path_meta = AsyncMock(return_value={})
 
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "", "value": 1.0}]}]
-        })
+        await hub._on_delta({"updates": [{"values": [{"path": "", "value": 1.0}]}]})
         assert len(hub._sensors) == 0
 
     @pytest.mark.asyncio
@@ -277,9 +300,13 @@ class TestDeltaProcessing:
         hub._sensor_add_entities = MagicMock()
         hub._tracker_add_entities = MagicMock()
 
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "navigation.sog.values.nmea", "value": 5.0}]}]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {"values": [{"path": "navigation.sog.values.nmea", "value": 5.0}]}
+                ]
+            }
+        )
         assert "navigation.sog.values.nmea" in hub.ignored_paths
 
     @pytest.mark.asyncio
@@ -288,9 +315,13 @@ class TestDeltaProcessing:
         hub._sensor_add_entities = MagicMock()
         hub._tracker_add_entities = MagicMock()
 
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "completely.unknown.thing", "value": 42}]}]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {"values": [{"path": "completely.unknown.thing", "value": 42}]}
+                ]
+            }
+        )
         assert "completely.unknown.thing" in hub.ignored_paths
         assert len(hub.sensors) == 0
 
@@ -301,9 +332,9 @@ class TestDeltaProcessing:
         hub._tracker_add_entities = None
 
         # Should not crash
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "navigation.sog", "value": 1.0}]}]
-        })
+        await hub._on_delta(
+            {"updates": [{"values": [{"path": "navigation.sog", "value": 1.0}]}]}
+        )
 
     @pytest.mark.asyncio
     async def test_latest_values_always_updated(self):
@@ -312,9 +343,9 @@ class TestDeltaProcessing:
         hub._tracker_add_entities = MagicMock()
         hub._client.get_path_meta = AsyncMock(return_value={})
 
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "navigation.sog", "value": 5.0}]}]
-        })
+        await hub._on_delta(
+            {"updates": [{"values": [{"path": "navigation.sog", "value": 5.0}]}]}
+        )
         assert hub._latest_values["navigation.sog"] == 5.0
 
     @pytest.mark.asyncio
@@ -325,9 +356,13 @@ class TestDeltaProcessing:
         hub._tracker_add_entities = MagicMock()
         hub._client.get_path_meta = AsyncMock(return_value={})
 
-        await hub._on_delta({
-            "updates": [{"values": [{"path": "navigation.speedOverGround", "value": 5.0}]}]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {"values": [{"path": "navigation.speedOverGround", "value": 5.0}]}
+                ]
+            }
+        )
         assert "navigation.speedOverGround" in hub.classifications
         c = hub.classifications["navigation.speedOverGround"]
         assert c.domain == SignalKDomain.NAVIGATION
@@ -336,6 +371,7 @@ class TestDeltaProcessing:
 # ===================================================================
 # Hub put/post
 # ===================================================================
+
 
 class TestHubServices:
     @pytest.mark.asyncio
@@ -358,6 +394,7 @@ class TestHubServices:
 # Domain policy services
 # ===================================================================
 
+
 class TestDomainPolicyServices:
     def test_set_domain_policy(self):
         hub = _make_hub()
@@ -379,6 +416,7 @@ class TestDomainPolicyServices:
 # ===================================================================
 # Reclassify / rescan
 # ===================================================================
+
 
 class TestReclassifyRescan:
     def test_reclassify_paths(self):
@@ -405,6 +443,7 @@ class TestReclassifyRescan:
 # dump_runtime_state
 # ===================================================================
 
+
 class TestDumpRuntimeState:
     def test_dump_structure(self):
         hub = _make_hub()
@@ -429,6 +468,7 @@ class TestDumpRuntimeState:
 # ===================================================================
 # Hub stop
 # ===================================================================
+
 
 class TestHubStop:
     @pytest.mark.asyncio
@@ -456,6 +496,7 @@ class TestHubStop:
 # async_setup (service registration)
 # ===================================================================
 
+
 class TestAsyncSetup:
     @pytest.mark.asyncio
     async def test_services_registered(self):
@@ -482,6 +523,7 @@ class TestAsyncSetup:
 # async_setup_entry
 # ===================================================================
 
+
 class TestAsyncSetupEntry:
     @pytest.mark.asyncio
     async def test_creates_hub(self):
@@ -504,6 +546,7 @@ class TestAsyncSetupEntry:
     @pytest.mark.asyncio
     async def test_platforms_include_device_tracker(self):
         from homeassistant.const import Platform
+
         assert Platform.DEVICE_TRACKER in PLATFORMS
         assert Platform.SENSOR in PLATFORMS
 
@@ -511,6 +554,7 @@ class TestAsyncSetupEntry:
 # ===================================================================
 # async_unload_entry
 # ===================================================================
+
 
 class TestAsyncUnloadEntry:
     @pytest.mark.asyncio
@@ -529,6 +573,7 @@ class TestAsyncUnloadEntry:
 # Source parsing in deltas
 # ===================================================================
 
+
 class TestDeltaSourceParsing:
     @pytest.mark.asyncio
     async def test_source_dict(self):
@@ -537,12 +582,16 @@ class TestDeltaSourceParsing:
         hub._tracker_add_entities = MagicMock()
         hub._client.get_path_meta = AsyncMock(return_value={})
 
-        await hub._on_delta({
-            "updates": [{
-                "source": {"label": "n2k-gateway"},
-                "values": [{"path": "navigation.sog", "value": 5.0}],
-            }]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {
+                        "source": {"label": "n2k-gateway"},
+                        "values": [{"path": "navigation.sog", "value": 5.0}],
+                    }
+                ]
+            }
+        )
         # Should not crash
 
     @pytest.mark.asyncio
@@ -552,12 +601,21 @@ class TestDeltaSourceParsing:
         hub._tracker_add_entities = MagicMock()
         hub._client.get_path_meta = AsyncMock(return_value={})
 
-        await hub._on_delta({
-            "updates": [{
-                "source": "serial-gps",
-                "values": [{"path": "navigation.position", "value": {"latitude": 51.0, "longitude": -1.0}}],
-            }]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {
+                        "source": "serial-gps",
+                        "values": [
+                            {
+                                "path": "navigation.position",
+                                "value": {"latitude": 51.0, "longitude": -1.0},
+                            }
+                        ],
+                    }
+                ]
+            }
+        )
 
     @pytest.mark.asyncio
     async def test_dollar_source(self):
@@ -566,12 +624,18 @@ class TestDeltaSourceParsing:
         hub._tracker_add_entities = MagicMock()
         hub._client.get_path_meta = AsyncMock(return_value={})
 
-        await hub._on_delta({
-            "updates": [{
-                "$source": "nmea0183.GP",
-                "values": [{"path": "navigation.headingMagnetic", "value": 1.57}],
-            }]
-        })
+        await hub._on_delta(
+            {
+                "updates": [
+                    {
+                        "$source": "nmea0183.GP",
+                        "values": [
+                            {"path": "navigation.headingMagnetic", "value": 1.57}
+                        ],
+                    }
+                ]
+            }
+        )
 
     def test_extract_source_dict(self):
         result = SignalKHub._extract_source({"source": {"label": "n2k"}})
@@ -593,6 +657,7 @@ class TestDeltaSourceParsing:
 # ===================================================================
 # Enable/disable sensors property
 # ===================================================================
+
 
 class TestHubProperties:
     def test_enable_new_sensors_setter(self):

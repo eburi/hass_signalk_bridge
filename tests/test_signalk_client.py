@@ -1,6 +1,5 @@
 """Tests for signalk_client.py — async client with mocked HTTP/WS."""
 
-import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -9,7 +8,6 @@ import pytest
 
 from custom_components.signalk_bridge.signalk_client import (
     SignalKClient,
-    SignalKAuthError,
     SignalKConnectionError,
 )
 
@@ -17,6 +15,7 @@ from custom_components.signalk_bridge.signalk_client import (
 # ===================================================================
 # Initialization
 # ===================================================================
+
 
 class TestClientInit:
     def test_default_init(self):
@@ -42,6 +41,7 @@ class TestClientInit:
 # ===================================================================
 # Discovery
 # ===================================================================
+
 
 class TestDiscovery:
     @pytest.mark.asyncio
@@ -92,6 +92,7 @@ class TestDiscovery:
 # ===================================================================
 # Token validation
 # ===================================================================
+
 
 class TestValidateToken:
     @pytest.mark.asyncio
@@ -146,6 +147,7 @@ class TestValidateToken:
 # ===================================================================
 # REST API helpers
 # ===================================================================
+
 
 def _mock_http_client(mock_resp):
     """Create a patched httpx.AsyncClient that returns mock_resp."""
@@ -309,6 +311,7 @@ class TestPostDelta:
 # WebSocket URL building
 # ===================================================================
 
+
 class TestBuildWsUrl:
     def test_http_to_ws(self):
         c = SignalKClient(base_url="http://host:3000")
@@ -330,6 +333,7 @@ class TestBuildWsUrl:
 # ===================================================================
 # Self context matching
 # ===================================================================
+
 
 class TestSelfContext:
     def test_vessels_self(self):
@@ -354,6 +358,7 @@ class TestSelfContext:
 # Message handling
 # ===================================================================
 
+
 class TestHandleMessage:
     @pytest.mark.asyncio
     async def test_delta_dispatched(self):
@@ -363,9 +368,7 @@ class TestHandleMessage:
 
         msg = {
             "context": "vessels.self",
-            "updates": [
-                {"values": [{"path": "navigation.sog", "value": 5.0}]}
-            ],
+            "updates": [{"values": [{"path": "navigation.sog", "value": 5.0}]}],
         }
         await c._handle_message(msg)
         assert len(received) == 1
@@ -378,9 +381,7 @@ class TestHandleMessage:
 
         msg = {
             "context": "vessels.urn:mrn:imo:mmsi:999999",
-            "updates": [
-                {"values": [{"path": "navigation.sog", "value": 3.0}]}
-            ],
+            "updates": [{"values": [{"path": "navigation.sog", "value": 3.0}]}],
         }
         await c._handle_message(msg)
         c._on_delta.assert_not_called()
@@ -396,6 +397,7 @@ class TestHandleMessage:
 # ===================================================================
 # Stop
 # ===================================================================
+
 
 class TestStop:
     @pytest.mark.asyncio
@@ -419,6 +421,7 @@ class TestStop:
 # ===================================================================
 # Authentication flow
 # ===================================================================
+
 
 class TestAuthenticate:
     @pytest.mark.asyncio

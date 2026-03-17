@@ -1,12 +1,8 @@
 """Tests for classifier.py — 4-layer SignalK path classification."""
 
-import pytest
-
 from custom_components.signalk_bridge.classifier import (
     EXACT_MATCHES,
     PREFIX_RULES,
-    SEGMENT_HEURISTICS,
-    SUFFIX_HEURISTICS,
     ClassificationResult,
     canonicalize_path,
     classify_path,
@@ -20,19 +16,27 @@ from custom_components.signalk_bridge.const import SignalKDomain
 # canonicalize_path
 # ===================================================================
 
+
 class TestCanonicalizePath:
     def test_vessels_self_prefix(self):
-        assert canonicalize_path("vessels.self.navigation.position") == "navigation.position"
+        assert (
+            canonicalize_path("vessels.self.navigation.position")
+            == "navigation.position"
+        )
 
     def test_vessels_urn_imo_prefix(self):
         assert (
-            canonicalize_path("vessels.urn:mrn:imo:mmsi:123456789.navigation.speedOverGround")
+            canonicalize_path(
+                "vessels.urn:mrn:imo:mmsi:123456789.navigation.speedOverGround"
+            )
             == "navigation.speedOverGround"
         )
 
     def test_vessels_urn_signalk_prefix(self):
         assert (
-            canonicalize_path("vessels.urn:mrn:signalk:uuid:abc123.environment.depth.belowKeel")
+            canonicalize_path(
+                "vessels.urn:mrn:signalk:uuid:abc123.environment.depth.belowKeel"
+            )
             == "environment.depth.belowKeel"
         )
 
@@ -54,6 +58,7 @@ class TestCanonicalizePath:
 # ===================================================================
 # is_ignored_path
 # ===================================================================
+
 
 class TestIsIgnoredPath:
     def test_values_branch(self):
@@ -87,6 +92,7 @@ class TestIsIgnoredPath:
 # ===================================================================
 # classify_path — Layer 1: Exact matches
 # ===================================================================
+
 
 class TestClassifyExactMatch:
     def test_navigation_position(self):
@@ -167,6 +173,7 @@ class TestClassifyExactMatch:
 # ===================================================================
 # classify_path — Layer 2: Prefix rules
 # ===================================================================
+
 
 class TestClassifyPrefixRules:
     def test_notifications_ais_ignored(self):
@@ -257,6 +264,7 @@ class TestClassifyPrefixRules:
 # classify_path — Layer 3: Heuristics
 # ===================================================================
 
+
 class TestClassifyHeuristics:
     def test_suffix_estimated_time_of_arrival(self):
         """Suffix heuristic only fires for paths NOT caught by prefix rules.
@@ -276,7 +284,9 @@ class TestClassifyHeuristics:
     def test_prefix_takes_priority_over_suffix(self):
         """Prefix rules (Layer 2) beat suffix heuristics (Layer 3).
         navigation.* matches prefix before .estimatedTimeOfArrival suffix."""
-        result = classify_path("navigation.courseRhumbline.nextPoint.estimatedTimeOfArrival")
+        result = classify_path(
+            "navigation.courseRhumbline.nextPoint.estimatedTimeOfArrival"
+        )
         assert result.domain == SignalKDomain.NAVIGATION
 
         result2 = classify_path("propulsion.port.oilPressure.startTime")
@@ -314,6 +324,7 @@ class TestClassifyHeuristics:
 # classify_path — Layer 4: Fallback
 # ===================================================================
 
+
 class TestClassifyFallback:
     def test_completely_unknown_path(self):
         result = classify_path("completely.unknown.path")
@@ -331,6 +342,7 @@ class TestClassifyFallback:
 # ===================================================================
 # path_to_friendly_name
 # ===================================================================
+
 
 class TestPathToFriendlyName:
     def test_speed_over_ground(self):
@@ -386,6 +398,7 @@ class TestPathToFriendlyName:
 # ===================================================================
 # Classification caching integrity
 # ===================================================================
+
 
 class TestClassificationIntegrity:
     def test_same_path_gives_same_result(self):

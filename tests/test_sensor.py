@@ -2,7 +2,7 @@
 
 import math
 import time
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -13,11 +13,11 @@ from custom_components.signalk_bridge.sensor import (
     SignalKConnectionSensor,
     SignalKServerVersionSensor,
 )
-from custom_components.signalk_bridge.unit_mapping import get_sensor_mapping
 
 
 def _make_device_info():
     from homeassistant.helpers.device_registry import DeviceInfo
+
     return DeviceInfo(
         identifiers={("signalk_bridge", "test_vessel_self")},
         name="Vessel Self (test)",
@@ -43,8 +43,14 @@ def _make_classification(**kwargs):
     return ClassificationResult(**defaults)
 
 
-def _make_sensor(path="test.path", meta=None, initial_value=None,
-                 classification=None, entity_prefix="sk", entity_enabled=True):
+def _make_sensor(
+    path="test.path",
+    meta=None,
+    initial_value=None,
+    classification=None,
+    entity_prefix="sk",
+    entity_enabled=True,
+):
     if classification is None:
         classification = _make_classification()
     return SignalKSensor(
@@ -63,6 +69,7 @@ def _make_sensor(path="test.path", meta=None, initial_value=None,
 # ===================================================================
 # SignalKSensor init
 # ===================================================================
+
 
 class TestSignalKSensorInit:
     def test_basic_numeric_sensor(self):
@@ -169,6 +176,7 @@ class TestSignalKSensorInit:
 # Value conversion (_convert)
 # ===================================================================
 
+
 class TestSensorConvert:
     def test_none(self):
         s = _make_sensor()
@@ -205,6 +213,7 @@ class TestSensorConvert:
 # publish_value (replaces update_value)
 # ===================================================================
 
+
 class TestSensorPublishValue:
     def test_publish_before_ready_is_ignored(self):
         sensor = _make_sensor(initial_value=1.0)
@@ -233,6 +242,7 @@ class TestSensorPublishValue:
 # update_meta
 # ===================================================================
 
+
 class TestSensorUpdateMeta:
     def test_update_meta_refreshes_mapping(self):
         sensor = _make_sensor(
@@ -247,6 +257,7 @@ class TestSensorUpdateMeta:
 # ===================================================================
 # set_enabled
 # ===================================================================
+
 
 class TestSensorSetEnabled:
     def test_set_enabled_true(self):
@@ -264,6 +275,7 @@ class TestSensorSetEnabled:
 # ===================================================================
 # extra_state_attributes
 # ===================================================================
+
 
 class TestExtraStateAttributes:
     def test_attributes_include_path(self):
@@ -306,6 +318,7 @@ class TestExtraStateAttributes:
 # availability (staleness)
 # ===================================================================
 
+
 class TestSensorAvailability:
     def test_available_when_not_ready(self):
         sensor = _make_sensor(initial_value=1)
@@ -319,6 +332,7 @@ class TestSensorAvailability:
 
     def test_unavailable_when_stale(self):
         from custom_components.signalk_bridge.const import STALE_TIMEOUT_S
+
         sensor = _make_sensor(initial_value=1)
         sensor._ready = True
         sensor._last_update = time.monotonic() - STALE_TIMEOUT_S - 60
@@ -328,6 +342,7 @@ class TestSensorAvailability:
 # ===================================================================
 # signalk_path / classification properties
 # ===================================================================
+
 
 class TestProperties:
     def test_signalk_path(self):
@@ -343,6 +358,7 @@ class TestProperties:
 # ===================================================================
 # Diagnostic sensors
 # ===================================================================
+
 
 class TestConnectionSensor:
     def test_init(self):
@@ -389,6 +405,7 @@ class TestServerVersionSensor:
 # ===================================================================
 # async lifecycle
 # ===================================================================
+
 
 class TestLifecycle:
     @pytest.mark.asyncio

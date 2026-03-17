@@ -70,37 +70,49 @@ SERVICE_DUMP_RUNTIME_STATE = "dump_runtime_state"
 # Service schemas
 # ──────────────────────────────────────────────────────────────────────
 
-SERVICE_PUT_SCHEMA = vol.Schema({
-    vol.Required("path"): cv.string,
-    vol.Required("value"): vol.Any(cv.string, vol.Coerce(float), bool, dict, list),
-})
+SERVICE_PUT_SCHEMA = vol.Schema(
+    {
+        vol.Required("path"): cv.string,
+        vol.Required("value"): vol.Any(cv.string, vol.Coerce(float), bool, dict, list),
+    }
+)
 
-SERVICE_POST_SCHEMA = vol.Schema({
-    vol.Required("path"): cv.string,
-    vol.Required("value"): vol.Any(cv.string, vol.Coerce(float), bool, dict, list),
-})
+SERVICE_POST_SCHEMA = vol.Schema(
+    {
+        vol.Required("path"): cv.string,
+        vol.Required("value"): vol.Any(cv.string, vol.Coerce(float), bool, dict, list),
+    }
+)
 
-SERVICE_SET_DOMAIN_POLICY_SCHEMA = vol.Schema({
-    vol.Required("domain"): cv.string,
-    vol.Optional("min_interval_seconds"): vol.Coerce(float),
-    vol.Optional("max_interval_seconds"): vol.Coerce(float),
-    vol.Optional("deadband"): vol.Coerce(float),
-    vol.Optional("enabled_by_default"): cv.boolean,
-})
+SERVICE_SET_DOMAIN_POLICY_SCHEMA = vol.Schema(
+    {
+        vol.Required("domain"): cv.string,
+        vol.Optional("min_interval_seconds"): vol.Coerce(float),
+        vol.Optional("max_interval_seconds"): vol.Coerce(float),
+        vol.Optional("deadband"): vol.Coerce(float),
+        vol.Optional("enabled_by_default"): cv.boolean,
+    }
+)
 
-SERVICE_RESET_DOMAIN_POLICY_SCHEMA = vol.Schema({
-    vol.Required("domain"): cv.string,
-})
+SERVICE_RESET_DOMAIN_POLICY_SCHEMA = vol.Schema(
+    {
+        vol.Required("domain"): cv.string,
+    }
+)
 
-SERVICE_SET_DISCOVERY_DEFAULTS_SCHEMA = vol.Schema({
-    vol.Optional("enable_new_sensors_by_default"): cv.boolean,
-    vol.Optional("publish_profile"): cv.string,
-    vol.Optional("log_ignored_paths"): cv.boolean,
-})
+SERVICE_SET_DISCOVERY_DEFAULTS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("enable_new_sensors_by_default"): cv.boolean,
+        vol.Optional("publish_profile"): cv.string,
+        vol.Optional("log_ignored_paths"): cv.boolean,
+    }
+)
 
-SERVICE_ENTITY_LIST_SCHEMA = vol.Schema({
-    vol.Required("entity_ids"): vol.Any(cv.string, [cv.string]),
-})
+SERVICE_ENTITY_LIST_SCHEMA = vol.Schema(
+    {
+        vol.Required("entity_ids"): vol.Any(cv.string, [cv.string]),
+    }
+)
 
 SERVICE_EMPTY_SCHEMA = vol.Schema({})
 
@@ -440,7 +452,9 @@ class SignalKHub:
             self._classifications[path] = classification
             _LOGGER.debug(
                 "Classified %s → domain=%s platform=%s enabled=%s",
-                path, classification.domain, classification.platform,
+                path,
+                classification.domain,
+                classification.platform,
                 classification.enabled_by_default,
             )
 
@@ -455,11 +469,17 @@ class SignalKHub:
         # Check publish policy — should we update HA?
         immediate = classification.domain == SignalKDomain.ALARM
         should_publish = self._policy_engine.should_publish(
-            path, classification.domain, value, immediate=immediate,
+            path,
+            classification.domain,
+            value,
+            immediate=immediate,
         )
 
         # Device tracker special handling
-        if classification.platform == "device_tracker" and path == "navigation.position":
+        if (
+            classification.platform == "device_tracker"
+            and path == "navigation.position"
+        ):
             await self._update_device_tracker(value, source, timestamp, should_publish)
             return
 
@@ -500,8 +520,12 @@ class SignalKHub:
             )
             self._sensors[path] = sensor
             self._sensor_add_entities([sensor])
-            _LOGGER.debug("Created sensor: %s (domain=%s, enabled=%s)",
-                          path, classification.domain, entity_enabled)
+            _LOGGER.debug(
+                "Created sensor: %s (domain=%s, enabled=%s)",
+                path,
+                classification.domain,
+                entity_enabled,
+            )
         elif should_publish:
             sensor.publish_value(value, source=source, timestamp=timestamp)
 
@@ -636,7 +660,8 @@ class SignalKHub:
             "domains": {
                 domain.value: {
                     "paths": [
-                        p for p, c in self._classifications.items()
+                        p
+                        for p, c in self._classifications.items()
                         if c.domain == domain
                     ],
                 }
@@ -801,9 +826,21 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     services = [
         (SERVICE_PUT_VALUE, handle_put_value, SERVICE_PUT_SCHEMA),
         (SERVICE_POST_DELTA, handle_post_delta, SERVICE_POST_SCHEMA),
-        (SERVICE_SET_DOMAIN_POLICY, handle_set_domain_policy, SERVICE_SET_DOMAIN_POLICY_SCHEMA),
-        (SERVICE_RESET_DOMAIN_POLICY, handle_reset_domain_policy, SERVICE_RESET_DOMAIN_POLICY_SCHEMA),
-        (SERVICE_SET_DISCOVERY_DEFAULTS, handle_set_discovery_defaults, SERVICE_SET_DISCOVERY_DEFAULTS_SCHEMA),
+        (
+            SERVICE_SET_DOMAIN_POLICY,
+            handle_set_domain_policy,
+            SERVICE_SET_DOMAIN_POLICY_SCHEMA,
+        ),
+        (
+            SERVICE_RESET_DOMAIN_POLICY,
+            handle_reset_domain_policy,
+            SERVICE_RESET_DOMAIN_POLICY_SCHEMA,
+        ),
+        (
+            SERVICE_SET_DISCOVERY_DEFAULTS,
+            handle_set_discovery_defaults,
+            SERVICE_SET_DISCOVERY_DEFAULTS_SCHEMA,
+        ),
         (SERVICE_RESCAN_PATHS, handle_rescan_paths, SERVICE_EMPTY_SCHEMA),
         (SERVICE_RECLASSIFY_PATHS, handle_reclassify_paths, SERVICE_EMPTY_SCHEMA),
         (SERVICE_ENABLE_ENTITIES, handle_enable_entities, SERVICE_ENTITY_LIST_SCHEMA),

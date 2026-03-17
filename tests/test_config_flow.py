@@ -1,8 +1,6 @@
 """Tests for config_flow.py — config flow steps and options flow."""
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Any
 
 import pytest
 
@@ -16,7 +14,6 @@ from custom_components.signalk_bridge.config_flow import (
 )
 from custom_components.signalk_bridge.const import (
     CONF_BASE_URL,
-    CONF_CLIENT_ID,
     CONF_CREATE_DIAGNOSTIC_ENTITIES,
     CONF_ENABLE_NEW_SENSORS,
     CONF_ENTITY_PREFIX,
@@ -24,15 +21,8 @@ from custom_components.signalk_bridge.const import (
     CONF_PUBLISH_PROFILE,
     CONF_TOKEN,
     CONF_USE_ADDON,
-    DEFAULT_BASE_URL,
-    DEFAULT_CREATE_DIAGNOSTIC_ENTITIES,
-    DEFAULT_ENABLE_NEW_SENSORS,
-    DEFAULT_ENTITY_PREFIX,
-    DEFAULT_LOG_IGNORED_PATHS,
     DEFAULT_PUBLISH_PROFILE,
-    DOMAIN,
     SIGNALK_ADDON_PORT,
-    SIGNALK_ADDON_SLUG,
     PublishProfile,
 )
 
@@ -40,6 +30,7 @@ from custom_components.signalk_bridge.const import (
 # ===================================================================
 # Helper: _is_hassio
 # ===================================================================
+
 
 class TestIsHassio:
     def test_hassio_present(self):
@@ -57,6 +48,7 @@ class TestIsHassio:
 # Helper: _check_signalk_addon
 # ===================================================================
 
+
 class TestCheckSignalkAddon:
     @pytest.mark.asyncio
     async def test_no_hassio(self):
@@ -73,6 +65,7 @@ class TestCheckSignalkAddon:
         addon_info = {"state": "started", "hostname": "a0d7b954-signalk"}
 
         import homeassistant.components.hassio as hassio_mod
+
         hassio_mod.async_get_addon_info = AsyncMock(return_value=addon_info)
 
         result = await _check_signalk_addon(hass)
@@ -97,10 +90,13 @@ class TestCheckSignalkAddon:
 # Helper: _get_addon_url
 # ===================================================================
 
+
 class TestGetAddonUrl:
     @pytest.mark.asyncio
     async def test_with_hostname(self):
-        url = await _get_addon_url({"hostname": "a0d7b954-signalk", "ip_address": "172.30.32.1"})
+        url = await _get_addon_url(
+            {"hostname": "a0d7b954-signalk", "ip_address": "172.30.32.1"}
+        )
         assert url == f"http://a0d7b954-signalk:{SIGNALK_ADDON_PORT}"
 
     @pytest.mark.asyncio
@@ -117,6 +113,7 @@ class TestGetAddonUrl:
 # ===================================================================
 # Helper: _test_signalk_connection
 # ===================================================================
+
 
 class TestTestSignalkConnection:
     @pytest.mark.asyncio
@@ -154,6 +151,7 @@ class TestTestSignalkConnection:
 # Config flow: user step
 # ===================================================================
 
+
 class TestConfigFlowUser:
     @pytest.mark.asyncio
     async def test_user_step_no_addon_goes_to_manual(self):
@@ -174,18 +172,22 @@ class TestConfigFlowUser:
         flow.hass = MagicMock()
 
         addon_info = {"state": "started", "hostname": "signalk-host"}
-        with patch(
-            "custom_components.signalk_bridge.config_flow._check_signalk_addon",
-            new_callable=AsyncMock,
-            return_value=addon_info,
-        ), patch(
-            "custom_components.signalk_bridge.config_flow._get_addon_url",
-            new_callable=AsyncMock,
-            return_value="http://signalk-host:3000",
-        ), patch(
-            "custom_components.signalk_bridge.config_flow._test_signalk_connection",
-            new_callable=AsyncMock,
-            return_value=True,
+        with (
+            patch(
+                "custom_components.signalk_bridge.config_flow._check_signalk_addon",
+                new_callable=AsyncMock,
+                return_value=addon_info,
+            ),
+            patch(
+                "custom_components.signalk_bridge.config_flow._get_addon_url",
+                new_callable=AsyncMock,
+                return_value="http://signalk-host:3000",
+            ),
+            patch(
+                "custom_components.signalk_bridge.config_flow._test_signalk_connection",
+                new_callable=AsyncMock,
+                return_value=True,
+            ),
         ):
             result = await flow.async_step_user(None)
             assert result["step_id"] == "choose_server"
@@ -196,18 +198,22 @@ class TestConfigFlowUser:
         flow.hass = MagicMock()
 
         addon_info = {"state": "started", "hostname": "signalk-host"}
-        with patch(
-            "custom_components.signalk_bridge.config_flow._check_signalk_addon",
-            new_callable=AsyncMock,
-            return_value=addon_info,
-        ), patch(
-            "custom_components.signalk_bridge.config_flow._get_addon_url",
-            new_callable=AsyncMock,
-            return_value="http://signalk-host:3000",
-        ), patch(
-            "custom_components.signalk_bridge.config_flow._test_signalk_connection",
-            new_callable=AsyncMock,
-            return_value=False,
+        with (
+            patch(
+                "custom_components.signalk_bridge.config_flow._check_signalk_addon",
+                new_callable=AsyncMock,
+                return_value=addon_info,
+            ),
+            patch(
+                "custom_components.signalk_bridge.config_flow._get_addon_url",
+                new_callable=AsyncMock,
+                return_value="http://signalk-host:3000",
+            ),
+            patch(
+                "custom_components.signalk_bridge.config_flow._test_signalk_connection",
+                new_callable=AsyncMock,
+                return_value=False,
+            ),
         ):
             result = await flow.async_step_user(None)
             assert result["step_id"] == "manual_url"
@@ -216,6 +222,7 @@ class TestConfigFlowUser:
 # ===================================================================
 # Config flow: choose_server step
 # ===================================================================
+
 
 class TestConfigFlowChooseServer:
     @pytest.mark.asyncio
@@ -226,7 +233,7 @@ class TestConfigFlowChooseServer:
 
         with patch.object(flow, "async_step_auth", new_callable=AsyncMock) as mock_auth:
             mock_auth.return_value = {"step_id": "auth"}
-            result = await flow.async_step_choose_server({CONF_USE_ADDON: True})
+            await flow.async_step_choose_server({CONF_USE_ADDON: True})
             assert flow._base_url == "http://addon:3000"
             mock_auth.assert_called_once()
 
@@ -235,9 +242,11 @@ class TestConfigFlowChooseServer:
         flow = SignalKBridgeConfigFlow()
         flow.hass = MagicMock()
 
-        with patch.object(flow, "async_step_manual_url", new_callable=AsyncMock) as mock_manual:
+        with patch.object(
+            flow, "async_step_manual_url", new_callable=AsyncMock
+        ) as mock_manual:
             mock_manual.return_value = {"step_id": "manual_url"}
-            result = await flow.async_step_choose_server({CONF_USE_ADDON: False})
+            await flow.async_step_choose_server({CONF_USE_ADDON: False})
             mock_manual.assert_called_once()
 
     @pytest.mark.asyncio
@@ -252,6 +261,7 @@ class TestConfigFlowChooseServer:
 # Config flow: manual_url step
 # ===================================================================
 
+
 class TestConfigFlowManualUrl:
     @pytest.mark.asyncio
     async def test_show_form(self):
@@ -265,15 +275,16 @@ class TestConfigFlowManualUrl:
         flow = SignalKBridgeConfigFlow()
         flow.hass = MagicMock()
 
-        with patch(
-            "custom_components.signalk_bridge.config_flow._test_signalk_connection",
-            new_callable=AsyncMock,
-            return_value=True,
-        ), patch.object(flow, "async_step_auth", new_callable=AsyncMock) as mock_auth:
+        with (
+            patch(
+                "custom_components.signalk_bridge.config_flow._test_signalk_connection",
+                new_callable=AsyncMock,
+                return_value=True,
+            ),
+            patch.object(flow, "async_step_auth", new_callable=AsyncMock) as mock_auth,
+        ):
             mock_auth.return_value = {"step_id": "auth"}
-            result = await flow.async_step_manual_url({
-                CONF_BASE_URL: "http://myboat:3000/"
-            })
+            await flow.async_step_manual_url({CONF_BASE_URL: "http://myboat:3000/"})
             assert flow._base_url == "http://myboat:3000"  # trailing slash stripped
             mock_auth.assert_called_once()
 
@@ -287,9 +298,9 @@ class TestConfigFlowManualUrl:
             new_callable=AsyncMock,
             return_value=False,
         ):
-            result = await flow.async_step_manual_url({
-                CONF_BASE_URL: "http://unreachable:9999"
-            })
+            result = await flow.async_step_manual_url(
+                {CONF_BASE_URL: "http://unreachable:9999"}
+            )
             assert result["step_id"] == "manual_url"
             assert result["errors"]["base"] == "cannot_connect"
 
@@ -297,6 +308,7 @@ class TestConfigFlowManualUrl:
 # ===================================================================
 # Config flow: prefix step
 # ===================================================================
+
 
 class TestConfigFlowPrefix:
     @pytest.mark.asyncio
@@ -325,6 +337,7 @@ class TestConfigFlowPrefix:
 # ===================================================================
 # Options flow: init step
 # ===================================================================
+
 
 class TestOptionsFlowInit:
     @pytest.mark.asyncio
@@ -359,6 +372,7 @@ class TestOptionsFlowInit:
 # Options flow: general step (processing)
 # ===================================================================
 
+
 class TestOptionsFlowGeneral:
     @pytest.mark.asyncio
     async def test_update_options(self):
@@ -376,14 +390,16 @@ class TestOptionsFlowGeneral:
         flow.config_entry.options = {}
         flow.config_entry.entry_id = "eid"
 
-        result = await flow.async_step_init({
-            CONF_BASE_URL: "http://boat:3000",  # unchanged
-            CONF_ENTITY_PREFIX: "newprefix",
-            CONF_ENABLE_NEW_SENSORS: True,
-            CONF_PUBLISH_PROFILE: PublishProfile.BALANCED,
-            CONF_LOG_IGNORED_PATHS: True,
-            CONF_CREATE_DIAGNOSTIC_ENTITIES: False,
-        })
+        result = await flow.async_step_init(
+            {
+                CONF_BASE_URL: "http://boat:3000",  # unchanged
+                CONF_ENTITY_PREFIX: "newprefix",
+                CONF_ENABLE_NEW_SENSORS: True,
+                CONF_PUBLISH_PROFILE: PublishProfile.BALANCED,
+                CONF_LOG_IGNORED_PATHS: True,
+                CONF_CREATE_DIAGNOSTIC_ENTITIES: False,
+            }
+        )
         assert result["type"] == "create_entry"
 
     @pytest.mark.asyncio
@@ -403,14 +419,16 @@ class TestOptionsFlowGeneral:
             new_callable=AsyncMock,
             return_value=False,
         ):
-            result = await flow.async_step_init({
-                CONF_BASE_URL: "http://new:3000",
-                CONF_ENTITY_PREFIX: "sk",
-                CONF_ENABLE_NEW_SENSORS: False,
-                CONF_PUBLISH_PROFILE: DEFAULT_PUBLISH_PROFILE,
-                CONF_LOG_IGNORED_PATHS: False,
-                CONF_CREATE_DIAGNOSTIC_ENTITIES: True,
-            })
+            result = await flow.async_step_init(
+                {
+                    CONF_BASE_URL: "http://new:3000",
+                    CONF_ENTITY_PREFIX: "sk",
+                    CONF_ENABLE_NEW_SENSORS: False,
+                    CONF_PUBLISH_PROFILE: DEFAULT_PUBLISH_PROFILE,
+                    CONF_LOG_IGNORED_PATHS: False,
+                    CONF_CREATE_DIAGNOSTIC_ENTITIES: True,
+                }
+            )
             assert result["errors"][CONF_BASE_URL] == "cannot_connect"
 
     @pytest.mark.asyncio
@@ -430,14 +448,16 @@ class TestOptionsFlowGeneral:
         }
         flow.config_entry.entry_id = "eid"
 
-        result = await flow.async_step_init({
-            CONF_BASE_URL: "http://boat:3000",
-            CONF_ENTITY_PREFIX: "sk",
-            CONF_ENABLE_NEW_SENSORS: False,
-            CONF_PUBLISH_PROFILE: PublishProfile.REALTIME,  # changed
-            CONF_LOG_IGNORED_PATHS: False,
-            CONF_CREATE_DIAGNOSTIC_ENTITIES: True,
-        })
+        result = await flow.async_step_init(
+            {
+                CONF_BASE_URL: "http://boat:3000",
+                CONF_ENTITY_PREFIX: "sk",
+                CONF_ENABLE_NEW_SENSORS: False,
+                CONF_PUBLISH_PROFILE: PublishProfile.REALTIME,  # changed
+                CONF_LOG_IGNORED_PATHS: False,
+                CONF_CREATE_DIAGNOSTIC_ENTITIES: True,
+            }
+        )
         assert result["type"] == "create_entry"
         flow.hass.config_entries.async_reload.assert_called_once_with("eid")
 
@@ -456,13 +476,15 @@ class TestOptionsFlowGeneral:
         flow.config_entry.options = {}
         flow.config_entry.entry_id = "eid"
 
-        result = await flow.async_step_init({
-            CONF_BASE_URL: "http://boat:3000",
-            CONF_ENTITY_PREFIX: "sk",
-            CONF_ENABLE_NEW_SENSORS: True,
-            CONF_PUBLISH_PROFILE: DEFAULT_PUBLISH_PROFILE,
-            CONF_LOG_IGNORED_PATHS: False,
-            CONF_CREATE_DIAGNOSTIC_ENTITIES: True,
-        })
+        result = await flow.async_step_init(
+            {
+                CONF_BASE_URL: "http://boat:3000",
+                CONF_ENTITY_PREFIX: "sk",
+                CONF_ENABLE_NEW_SENSORS: True,
+                CONF_PUBLISH_PROFILE: DEFAULT_PUBLISH_PROFILE,
+                CONF_LOG_IGNORED_PATHS: False,
+                CONF_CREATE_DIAGNOSTIC_ENTITIES: True,
+            }
+        )
         assert result["type"] == "create_entry"
         assert result["data"][CONF_ENABLE_NEW_SENSORS] is True

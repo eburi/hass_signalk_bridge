@@ -6,12 +6,12 @@ This module is loaded by conftest.py before any test imports.
 
 import sys
 import types
-from enum import StrEnum  # Python 3.11+
 from unittest.mock import MagicMock
 
 # ---------------------------------------------------------------------------
 # Helper: create a fake module and register it in sys.modules
 # ---------------------------------------------------------------------------
+
 
 def _make_module(name: str, attrs: dict | None = None) -> types.ModuleType:
     mod = types.ModuleType(name)
@@ -26,79 +26,97 @@ def _make_module(name: str, attrs: dict | None = None) -> types.ModuleType:
 # homeassistant.const  (enums / constants used by integration)
 # ---------------------------------------------------------------------------
 
+
 # Unit classes — each just holds class-level string constants
 class UnitOfTemperature:
     CELSIUS = "°C"
     FAHRENHEIT = "°F"
     KELVIN = "K"
 
+
 class UnitOfSpeed:
     METERS_PER_SECOND = "m/s"
     KILOMETERS_PER_HOUR = "km/h"
     KNOTS = "kn"
+
 
 class UnitOfPressure:
     PA = "Pa"
     HPA = "hPa"
     MBAR = "mbar"
 
+
 class UnitOfLength:
     METERS = "m"
     KILOMETERS = "km"
 
+
 class UnitOfElectricPotential:
     VOLT = "V"
+
 
 class UnitOfElectricCurrent:
     AMPERE = "A"
 
+
 class UnitOfFrequency:
     HERTZ = "Hz"
+
 
 class UnitOfEnergy:
     WATT_HOUR = "Wh"
     KILO_WATT_HOUR = "kWh"
 
+
 class UnitOfTime:
     SECONDS = "s"
+
 
 class UnitOfVolume:
     CUBIC_METERS = "m³"
     LITERS = "L"
 
+
 PERCENTAGE = "%"
+
 
 class EntityCategory:
     DIAGNOSTIC = "diagnostic"
+
 
 class Platform:
     SENSOR = "sensor"
     DEVICE_TRACKER = "device_tracker"
 
+
 EVENT_HOMEASSISTANT_STOP = "homeassistant_stop"
 
 
-ha_const = _make_module("homeassistant.const", {
-    "UnitOfTemperature": UnitOfTemperature,
-    "UnitOfSpeed": UnitOfSpeed,
-    "UnitOfPressure": UnitOfPressure,
-    "UnitOfLength": UnitOfLength,
-    "UnitOfElectricPotential": UnitOfElectricPotential,
-    "UnitOfElectricCurrent": UnitOfElectricCurrent,
-    "UnitOfFrequency": UnitOfFrequency,
-    "UnitOfEnergy": UnitOfEnergy,
-    "UnitOfTime": UnitOfTime,
-    "UnitOfVolume": UnitOfVolume,
-    "PERCENTAGE": PERCENTAGE,
-    "EntityCategory": EntityCategory,
-    "Platform": Platform,
-    "EVENT_HOMEASSISTANT_STOP": EVENT_HOMEASSISTANT_STOP,
-})
+ha_const = _make_module(
+    "homeassistant.const",
+    {
+        "UnitOfTemperature": UnitOfTemperature,
+        "UnitOfSpeed": UnitOfSpeed,
+        "UnitOfPressure": UnitOfPressure,
+        "UnitOfLength": UnitOfLength,
+        "UnitOfElectricPotential": UnitOfElectricPotential,
+        "UnitOfElectricCurrent": UnitOfElectricCurrent,
+        "UnitOfFrequency": UnitOfFrequency,
+        "UnitOfEnergy": UnitOfEnergy,
+        "UnitOfTime": UnitOfTime,
+        "UnitOfVolume": UnitOfVolume,
+        "PERCENTAGE": PERCENTAGE,
+        "EntityCategory": EntityCategory,
+        "Platform": Platform,
+        "EVENT_HOMEASSISTANT_STOP": EVENT_HOMEASSISTANT_STOP,
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # homeassistant.components.sensor
 # ---------------------------------------------------------------------------
+
 
 class SensorDeviceClass:
     TEMPERATURE = "temperature"
@@ -116,13 +134,16 @@ class SensorDeviceClass:
     HUMIDITY = "humidity"
     ILLUMINANCE = "illuminance"
 
+
 class SensorStateClass:
     MEASUREMENT = "measurement"
     TOTAL = "total"
     TOTAL_INCREASING = "total_increasing"
 
+
 class SensorEntity:
     """Minimal SensorEntity stand-in."""
+
     _attr_should_poll = True
     _attr_has_entity_name = False
     _attr_native_value = None
@@ -159,34 +180,47 @@ class SensorEntity:
 
 _make_module("homeassistant")
 _make_module("homeassistant.components", {})
-_make_module("homeassistant.components.sensor", {
-    "SensorDeviceClass": SensorDeviceClass,
-    "SensorEntity": SensorEntity,
-    "SensorStateClass": SensorStateClass,
-})
-_make_module("homeassistant.components.hassio", {
-    "async_get_addon_info": MagicMock(),
-})
+_make_module(
+    "homeassistant.components.sensor",
+    {
+        "SensorDeviceClass": SensorDeviceClass,
+        "SensorEntity": SensorEntity,
+        "SensorStateClass": SensorStateClass,
+    },
+)
+_make_module(
+    "homeassistant.components.hassio",
+    {
+        "async_get_addon_info": MagicMock(),
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # homeassistant.components.device_tracker
 # ---------------------------------------------------------------------------
 
+
 class SourceType:
     """Source type enum stand-in."""
+
     GPS = "gps"
     ROUTER = "router"
     BLUETOOTH = "bluetooth"
     BLUETOOTH_LE = "bluetooth_le"
 
-_make_module("homeassistant.components.device_tracker", {
-    "SourceType": SourceType,
-})
+
+_make_module(
+    "homeassistant.components.device_tracker",
+    {
+        "SourceType": SourceType,
+    },
+)
 
 
 class TrackerEntity:
     """Minimal TrackerEntity stand-in for device_tracker."""
+
     _attr_should_poll = True
     _attr_has_entity_name = False
     _attr_icon = None
@@ -221,17 +255,23 @@ class TrackerEntity:
     async def async_will_remove_from_hass(self):
         pass
 
-_make_module("homeassistant.components.device_tracker.config_entry", {
-    "TrackerEntity": TrackerEntity,
-})
+
+_make_module(
+    "homeassistant.components.device_tracker.config_entry",
+    {
+        "TrackerEntity": TrackerEntity,
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # homeassistant.core
 # ---------------------------------------------------------------------------
 
+
 class HomeAssistant:
     """Minimal HA stand-in."""
+
     def __init__(self):
         self.config = MagicMock()
         self.config.components = set()
@@ -255,20 +295,25 @@ def callback(func):
     return func
 
 
-_make_module("homeassistant.core", {
-    "HomeAssistant": HomeAssistant,
-    "ServiceCall": ServiceCall,
-    "callback": callback,
-    "Event": MagicMock,
-})
+_make_module(
+    "homeassistant.core",
+    {
+        "HomeAssistant": HomeAssistant,
+        "ServiceCall": ServiceCall,
+        "callback": callback,
+        "Event": MagicMock,
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # homeassistant.config_entries
 # ---------------------------------------------------------------------------
 
+
 class ConfigEntry:
     """Minimal ConfigEntry stand-in."""
+
     def __init__(self, entry_id="test_entry_id", data=None, title="Test", options=None):
         self.entry_id = entry_id
         self.data = data or {}
@@ -281,11 +326,13 @@ class ConfigEntry:
 
     def async_create_background_task(self, hass, coro, name):
         import asyncio
+
         return asyncio.ensure_future(coro)
 
 
 class ConfigFlow:
     """Minimal ConfigFlow stand-in."""
+
     VERSION = 1
     hass = None
     _unique_id = None
@@ -315,6 +362,7 @@ class ConfigFlow:
 
 class OptionsFlow:
     """Minimal OptionsFlow stand-in."""
+
     hass = None
     config_entry = None
 
@@ -328,11 +376,14 @@ class OptionsFlow:
         return schema
 
 
-_make_module("homeassistant.config_entries", {
-    "ConfigEntry": ConfigEntry,
-    "ConfigFlow": ConfigFlow,
-    "OptionsFlow": OptionsFlow,
-})
+_make_module(
+    "homeassistant.config_entries",
+    {
+        "ConfigEntry": ConfigEntry,
+        "ConfigFlow": ConfigFlow,
+        "OptionsFlow": OptionsFlow,
+    },
+)
 
 # Also make 'config_entries' importable as `from homeassistant import config_entries`
 ha_mod = sys.modules["homeassistant"]
@@ -343,12 +394,17 @@ ha_mod.config_entries = sys.modules["homeassistant.config_entries"]
 # homeassistant.data_entry_flow
 # ---------------------------------------------------------------------------
 
+
 class FlowResult(dict):
     pass
 
-_make_module("homeassistant.data_entry_flow", {
-    "FlowResult": FlowResult,
-})
+
+_make_module(
+    "homeassistant.data_entry_flow",
+    {
+        "FlowResult": FlowResult,
+    },
+)
 
 
 # ---------------------------------------------------------------------------
@@ -356,6 +412,7 @@ _make_module("homeassistant.data_entry_flow", {
 # ---------------------------------------------------------------------------
 
 _make_module("homeassistant.helpers", {})
+
 
 # config_validation — cv.string etc.
 class _CV:
@@ -374,17 +431,25 @@ class _CV:
     @staticmethod
     def config_entry_only_config_schema(domain):
         """Return a schema that rejects YAML config for config-entry-only integrations."""
+
         def _config_entry_only(config):
             if domain in config:
-                raise ValueError(f"The {domain} integration does not support YAML configuration")
+                raise ValueError(
+                    f"The {domain} integration does not support YAML configuration"
+                )
             return config
+
         return _config_entry_only
 
-_make_module("homeassistant.helpers.config_validation", {
-    "string": _CV.string,
-    "boolean": _CV.boolean,
-    "config_entry_only_config_schema": _CV.config_entry_only_config_schema,
-})
+
+_make_module(
+    "homeassistant.helpers.config_validation",
+    {
+        "string": _CV.string,
+        "boolean": _CV.boolean,
+        "config_entry_only_config_schema": _CV.config_entry_only_config_schema,
+    },
+)
 
 # For `import homeassistant.helpers.config_validation as cv`
 ha_helpers = sys.modules["homeassistant.helpers"]
@@ -393,34 +458,48 @@ ha_helpers.config_validation = sys.modules["homeassistant.helpers.config_validat
 
 class DeviceInfo(dict):
     """Minimal DeviceInfo stand-in."""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-_make_module("homeassistant.helpers.device_registry", {
-    "DeviceInfo": DeviceInfo,
-})
+
+_make_module(
+    "homeassistant.helpers.device_registry",
+    {
+        "DeviceInfo": DeviceInfo,
+    },
+)
 
 # AddEntitiesCallback type
-from typing import Callable, Iterable
+from typing import Callable  # noqa: E402
+
 AddEntitiesCallback = Callable
 
-_make_module("homeassistant.helpers.entity_platform", {
-    "AddEntitiesCallback": AddEntitiesCallback,
-})
+_make_module(
+    "homeassistant.helpers.entity_platform",
+    {
+        "AddEntitiesCallback": AddEntitiesCallback,
+    },
+)
 
-_make_module("homeassistant.helpers.typing", {
-    "ConfigType": dict,
-})
+_make_module(
+    "homeassistant.helpers.typing",
+    {
+        "ConfigType": dict,
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # voluptuous — minimal stub so service schemas can be parsed
 # ---------------------------------------------------------------------------
 
+
 class _VolSchema:
     """Minimal voluptuous.Schema stand-in."""
+
     def __init__(self, schema=None, extra=None):
         self._schema = schema
 
@@ -433,15 +512,19 @@ class _VolSchema:
 
 class _VolMarker:
     """Stand-in for vol.Required / vol.Optional — acts as dict key."""
+
     def __init__(self, key, default=None, description=None):
         self.key = key
         self.default = default
+
     def __hash__(self):
         return hash(self.key)
+
     def __eq__(self, other):
         if isinstance(other, _VolMarker):
             return self.key == other.key
         return self.key == other
+
     def __repr__(self):
         return f"{self.__class__.__name__}({self.key!r})"
 
@@ -456,51 +539,63 @@ class _Optional(_VolMarker):
 
 def _vol_any(*args):
     """vol.Any() — just returns the first validator or identity."""
+
     def validator(val):
         return val
+
     return validator
 
 
 def _vol_coerce(tp):
     """vol.Coerce(type) — returns a coercing validator."""
+
     def validator(val):
         return tp(val)
+
     return validator
 
 
 def _vol_in(container):
     """vol.In(container) — returns a membership validator."""
+
     def validator(val):
         if val not in container:
             raise ValueError(f"{val} not in {container}")
         return val
+
     return validator
 
 
 def _vol_all(*validators):
     """vol.All() — chain validators."""
+
     def validator(val):
         for v in validators:
             val = v(val)
         return val
+
     return validator
 
 
-vol_mod = _make_module("voluptuous", {
-    "Schema": _VolSchema,
-    "Required": _Required,
-    "Optional": _Optional,
-    "Any": _vol_any,
-    "All": _vol_all,
-    "Coerce": _vol_coerce,
-    "In": _vol_in,
-    "ALLOW_EXTRA": "ALLOW_EXTRA",
-})
+vol_mod = _make_module(
+    "voluptuous",
+    {
+        "Schema": _VolSchema,
+        "Required": _Required,
+        "Optional": _Optional,
+        "Any": _vol_any,
+        "All": _vol_all,
+        "Coerce": _vol_coerce,
+        "In": _vol_in,
+        "ALLOW_EXTRA": "ALLOW_EXTRA",
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # httpx — minimal stub for signalk_client imports
 # ---------------------------------------------------------------------------
+
 
 class _Response:
     def __init__(self, status_code=200, json_data=None, text=""):
@@ -519,6 +614,7 @@ class _Response:
 
 class _AsyncClient:
     """Minimal httpx.AsyncClient stand-in."""
+
     def __init__(self, **kwargs):
         pass
 
@@ -538,22 +634,27 @@ class _AsyncClient:
         return _Response()
 
 
-_make_module("httpx", {
-    "AsyncClient": _AsyncClient,
-    "Response": _Response,
-    "HTTPStatusError": Exception,
-    "RequestError": Exception,
-    "ConnectError": Exception,
-    "TimeoutException": Exception,
-})
+_make_module(
+    "httpx",
+    {
+        "AsyncClient": _AsyncClient,
+        "Response": _Response,
+        "HTTPStatusError": Exception,
+        "RequestError": Exception,
+        "ConnectError": Exception,
+        "TimeoutException": Exception,
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # websockets — minimal stub for signalk_client imports
 # ---------------------------------------------------------------------------
 
+
 class _WebSocketClientProtocol:
     """Minimal websocket connection stand-in."""
+
     async def recv(self):
         return "{}"
 
@@ -578,13 +679,19 @@ class _ConnectionClosed(Exception):
     pass
 
 
-_ws_mod = _make_module("websockets", {
-    "connect": _ws_connect,
-})
-_make_module("websockets.exceptions", {
-    "ConnectionClosed": _ConnectionClosed,
-    "ConnectionClosedError": _ConnectionClosed,
-    "ConnectionClosedOK": _ConnectionClosed,
-    "InvalidHandshake": Exception,
-    "InvalidStatusCode": Exception,
-})
+_ws_mod = _make_module(
+    "websockets",
+    {
+        "connect": _ws_connect,
+    },
+)
+_make_module(
+    "websockets.exceptions",
+    {
+        "ConnectionClosed": _ConnectionClosed,
+        "ConnectionClosedError": _ConnectionClosed,
+        "ConnectionClosedOK": _ConnectionClosed,
+        "InvalidHandshake": Exception,
+        "InvalidStatusCode": Exception,
+    },
+)

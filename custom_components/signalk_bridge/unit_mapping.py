@@ -309,9 +309,19 @@ def path_to_friendly_name(path: str) -> str:
     parts = path.split(".")
 
     # Remove common prefixes that are redundant
-    if parts and parts[0] in ("navigation", "environment", "electrical", "propulsion",
-                               "tanks", "notifications", "steering", "communication",
-                               "design", "sails", "performance"):
+    if parts and parts[0] in (
+        "navigation",
+        "environment",
+        "electrical",
+        "propulsion",
+        "tanks",
+        "notifications",
+        "steering",
+        "communication",
+        "design",
+        "sails",
+        "performance",
+    ):
         parts = parts[1:]
 
     # Convert camelCase to words

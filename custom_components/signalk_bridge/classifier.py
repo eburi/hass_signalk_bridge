@@ -259,6 +259,7 @@ EXACT_MATCHES: dict[str, ClassificationResult] = {
 # Layer 2: Prefix-based rules (checked in order, first match wins)
 # ──────────────────────────────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class PrefixRule:
     """A prefix-matching rule for path classification."""
@@ -269,204 +270,313 @@ class PrefixRule:
 
 PREFIX_RULES: list[PrefixRule] = [
     # ── Ignore rules (must come before catch-all domain rules) ──
-    PrefixRule("notifications.ais.", ClassificationResult(
-        domain=SignalKDomain.UNSUPPORTED_IGNORE)),
-    PrefixRule("sensors.ais.", ClassificationResult(
-        domain=SignalKDomain.UNSUPPORTED_IGNORE)),
-    PrefixRule("notifications.security.accessRequest.", ClassificationResult(
-        domain=SignalKDomain.UNSUPPORTED_IGNORE)),
-
+    PrefixRule(
+        "notifications.ais.",
+        ClassificationResult(domain=SignalKDomain.UNSUPPORTED_IGNORE),
+    ),
+    PrefixRule(
+        "sensors.ais.", ClassificationResult(domain=SignalKDomain.UNSUPPORTED_IGNORE)
+    ),
+    PrefixRule(
+        "notifications.security.accessRequest.",
+        ClassificationResult(domain=SignalKDomain.UNSUPPORTED_IGNORE),
+    ),
     # ── Alarm ──
-    PrefixRule("notifications.", ClassificationResult(
-        domain=SignalKDomain.ALARM,
-        enabled_by_default=True,
-        icon="mdi:alert",
-    )),
-
+    PrefixRule(
+        "notifications.",
+        ClassificationResult(
+            domain=SignalKDomain.ALARM,
+            enabled_by_default=True,
+            icon="mdi:alert",
+        ),
+    ),
     # ── Position / GNSS ──
-    PrefixRule("navigation.gnss.", ClassificationResult(
-        domain=SignalKDomain.POSITION,
-        enabled_by_default=False,
-        icon="mdi:satellite-variant",
-    )),
-
+    PrefixRule(
+        "navigation.gnss.",
+        ClassificationResult(
+            domain=SignalKDomain.POSITION,
+            enabled_by_default=False,
+            icon="mdi:satellite-variant",
+        ),
+    ),
     # ── Navigation ──
-    PrefixRule("navigation.heading", ClassificationResult(
-        domain=SignalKDomain.NAVIGATION,
-        icon="mdi:compass",
-    )),
-    PrefixRule("navigation.course", ClassificationResult(
-        domain=SignalKDomain.NAVIGATION,
-        icon="mdi:navigation",
-    )),
-    PrefixRule("navigation.speed", ClassificationResult(
-        domain=SignalKDomain.NAVIGATION,
-        icon="mdi:speedometer",
-    )),
-
+    PrefixRule(
+        "navigation.heading",
+        ClassificationResult(
+            domain=SignalKDomain.NAVIGATION,
+            icon="mdi:compass",
+        ),
+    ),
+    PrefixRule(
+        "navigation.course",
+        ClassificationResult(
+            domain=SignalKDomain.NAVIGATION,
+            icon="mdi:navigation",
+        ),
+    ),
+    PrefixRule(
+        "navigation.speed",
+        ClassificationResult(
+            domain=SignalKDomain.NAVIGATION,
+            icon="mdi:speedometer",
+        ),
+    ),
     # ── Wind ──
-    PrefixRule("environment.wind.", ClassificationResult(
-        domain=SignalKDomain.WIND,
-        icon="mdi:weather-windy",
-    )),
-    PrefixRule("steering.autopilot.target.wind", ClassificationResult(
-        domain=SignalKDomain.WIND,
-        icon="mdi:weather-windy",
-    )),
-    PrefixRule("performance.target", ClassificationResult(
-        domain=SignalKDomain.WIND,
-        icon="mdi:angle-acute",
-    )),
-    PrefixRule("performance.gybe", ClassificationResult(
-        domain=SignalKDomain.WIND,
-        icon="mdi:angle-acute",
-    )),
-
+    PrefixRule(
+        "environment.wind.",
+        ClassificationResult(
+            domain=SignalKDomain.WIND,
+            icon="mdi:weather-windy",
+        ),
+    ),
+    PrefixRule(
+        "steering.autopilot.target.wind",
+        ClassificationResult(
+            domain=SignalKDomain.WIND,
+            icon="mdi:weather-windy",
+        ),
+    ),
+    PrefixRule(
+        "performance.target",
+        ClassificationResult(
+            domain=SignalKDomain.WIND,
+            icon="mdi:angle-acute",
+        ),
+    ),
+    PrefixRule(
+        "performance.gybe",
+        ClassificationResult(
+            domain=SignalKDomain.WIND,
+            icon="mdi:angle-acute",
+        ),
+    ),
     # ── Environment ──
-    PrefixRule("environment.depth.", ClassificationResult(
-        domain=SignalKDomain.ENVIRONMENT,
-        icon="mdi:waves-arrow-up",
-    )),
-    PrefixRule("environment.water.", ClassificationResult(
-        domain=SignalKDomain.ENVIRONMENT,
-        icon="mdi:water",
-    )),
-    PrefixRule("environment.current.", ClassificationResult(
-        domain=SignalKDomain.ENVIRONMENT,
-        icon="mdi:current-dc",
-    )),
-    PrefixRule("environment.inside.", ClassificationResult(
-        domain=SignalKDomain.ENVIRONMENT,
-        icon="mdi:home-thermometer",
-    )),
-    PrefixRule("environment.outside.", ClassificationResult(
-        domain=SignalKDomain.ENVIRONMENT,
-        icon="mdi:weather-partly-cloudy",
-    )),
-    PrefixRule("environment.sunlight.", ClassificationResult(
-        domain=SignalKDomain.TIME,
-        enabled_by_default=False,
-        icon="mdi:weather-sunny",
-    )),
-    PrefixRule("environment.moon.", ClassificationResult(
-        domain=SignalKDomain.ENVIRONMENT,
-        enabled_by_default=False,
-        icon="mdi:moon-waning-crescent",
-    )),
-
+    PrefixRule(
+        "environment.depth.",
+        ClassificationResult(
+            domain=SignalKDomain.ENVIRONMENT,
+            icon="mdi:waves-arrow-up",
+        ),
+    ),
+    PrefixRule(
+        "environment.water.",
+        ClassificationResult(
+            domain=SignalKDomain.ENVIRONMENT,
+            icon="mdi:water",
+        ),
+    ),
+    PrefixRule(
+        "environment.current.",
+        ClassificationResult(
+            domain=SignalKDomain.ENVIRONMENT,
+            icon="mdi:current-dc",
+        ),
+    ),
+    PrefixRule(
+        "environment.inside.",
+        ClassificationResult(
+            domain=SignalKDomain.ENVIRONMENT,
+            icon="mdi:home-thermometer",
+        ),
+    ),
+    PrefixRule(
+        "environment.outside.",
+        ClassificationResult(
+            domain=SignalKDomain.ENVIRONMENT,
+            icon="mdi:weather-partly-cloudy",
+        ),
+    ),
+    PrefixRule(
+        "environment.sunlight.",
+        ClassificationResult(
+            domain=SignalKDomain.TIME,
+            enabled_by_default=False,
+            icon="mdi:weather-sunny",
+        ),
+    ),
+    PrefixRule(
+        "environment.moon.",
+        ClassificationResult(
+            domain=SignalKDomain.ENVIRONMENT,
+            enabled_by_default=False,
+            icon="mdi:moon-waning-crescent",
+        ),
+    ),
     # ── Tank ──
-    PrefixRule("tanks.", ClassificationResult(
-        domain=SignalKDomain.TANK,
-        icon="mdi:gauge",
-    )),
-    PrefixRule("tank.", ClassificationResult(
-        domain=SignalKDomain.TANK,
-        icon="mdi:gauge",
-    )),
-
+    PrefixRule(
+        "tanks.",
+        ClassificationResult(
+            domain=SignalKDomain.TANK,
+            icon="mdi:gauge",
+        ),
+    ),
+    PrefixRule(
+        "tank.",
+        ClassificationResult(
+            domain=SignalKDomain.TANK,
+            icon="mdi:gauge",
+        ),
+    ),
     # ── Battery / DC (must come before general electrical catch-all) ──
-    PrefixRule("electrical.batteries.", ClassificationResult(
-        domain=SignalKDomain.BATTERY_DC,
-        icon="mdi:battery",
-    )),
-    PrefixRule("electrical.dc.", ClassificationResult(
-        domain=SignalKDomain.BATTERY_DC,
-        icon="mdi:flash",
-    )),
-    PrefixRule("electrical.solar.", ClassificationResult(
-        domain=SignalKDomain.BATTERY_DC,
-        icon="mdi:solar-panel",
-    )),
-    PrefixRule("electrical.alternators.", ClassificationResult(
-        domain=SignalKDomain.BATTERY_DC,
-        icon="mdi:engine",
-    )),
-
+    PrefixRule(
+        "electrical.batteries.",
+        ClassificationResult(
+            domain=SignalKDomain.BATTERY_DC,
+            icon="mdi:battery",
+        ),
+    ),
+    PrefixRule(
+        "electrical.dc.",
+        ClassificationResult(
+            domain=SignalKDomain.BATTERY_DC,
+            icon="mdi:flash",
+        ),
+    ),
+    PrefixRule(
+        "electrical.solar.",
+        ClassificationResult(
+            domain=SignalKDomain.BATTERY_DC,
+            icon="mdi:solar-panel",
+        ),
+    ),
+    PrefixRule(
+        "electrical.alternators.",
+        ClassificationResult(
+            domain=SignalKDomain.BATTERY_DC,
+            icon="mdi:engine",
+        ),
+    ),
     # ── Inverter / AC ──
-    PrefixRule("electrical.inverters.", ClassificationResult(
-        domain=SignalKDomain.INVERTER_AC,
-        icon="mdi:power-plug",
-    )),
-    PrefixRule("electrical.ac.", ClassificationResult(
-        domain=SignalKDomain.INVERTER_AC,
-        icon="mdi:power-plug",
-    )),
-    PrefixRule("electrical.shorePower.", ClassificationResult(
-        domain=SignalKDomain.INVERTER_AC,
-        icon="mdi:power-plug",
-    )),
-    PrefixRule("electrical.generators.", ClassificationResult(
-        domain=SignalKDomain.INVERTER_AC,
-        icon="mdi:engine",
-    )),
-
+    PrefixRule(
+        "electrical.inverters.",
+        ClassificationResult(
+            domain=SignalKDomain.INVERTER_AC,
+            icon="mdi:power-plug",
+        ),
+    ),
+    PrefixRule(
+        "electrical.ac.",
+        ClassificationResult(
+            domain=SignalKDomain.INVERTER_AC,
+            icon="mdi:power-plug",
+        ),
+    ),
+    PrefixRule(
+        "electrical.shorePower.",
+        ClassificationResult(
+            domain=SignalKDomain.INVERTER_AC,
+            icon="mdi:power-plug",
+        ),
+    ),
+    PrefixRule(
+        "electrical.generators.",
+        ClassificationResult(
+            domain=SignalKDomain.INVERTER_AC,
+            icon="mdi:engine",
+        ),
+    ),
     # ── Engine / propulsion ──
-    PrefixRule("propulsion.", ClassificationResult(
-        domain=SignalKDomain.ENGINE_PROPULSION,
-        icon="mdi:engine",
-    )),
-    PrefixRule("engines.", ClassificationResult(
-        domain=SignalKDomain.ENGINE_PROPULSION,
-        icon="mdi:engine",
-    )),
-
+    PrefixRule(
+        "propulsion.",
+        ClassificationResult(
+            domain=SignalKDomain.ENGINE_PROPULSION,
+            icon="mdi:engine",
+        ),
+    ),
+    PrefixRule(
+        "engines.",
+        ClassificationResult(
+            domain=SignalKDomain.ENGINE_PROPULSION,
+            icon="mdi:engine",
+        ),
+    ),
     # ── Bilge / pump ──
-    PrefixRule("bilge.", ClassificationResult(
-        domain=SignalKDomain.BILGE_PUMP,
-        icon="mdi:water-pump",
-    )),
-    PrefixRule("pumps.", ClassificationResult(
-        domain=SignalKDomain.BILGE_PUMP,
-        icon="mdi:water-pump",
-    )),
-
+    PrefixRule(
+        "bilge.",
+        ClassificationResult(
+            domain=SignalKDomain.BILGE_PUMP,
+            icon="mdi:water-pump",
+        ),
+    ),
+    PrefixRule(
+        "pumps.",
+        ClassificationResult(
+            domain=SignalKDomain.BILGE_PUMP,
+            icon="mdi:water-pump",
+        ),
+    ),
     # ── Watermaker ──
-    PrefixRule("watermaker.", ClassificationResult(
-        domain=SignalKDomain.WATERMAKER,
-        icon="mdi:water-plus",
-    )),
-    PrefixRule("watermakers.", ClassificationResult(
-        domain=SignalKDomain.WATERMAKER,
-        icon="mdi:water-plus",
-    )),
-
+    PrefixRule(
+        "watermaker.",
+        ClassificationResult(
+            domain=SignalKDomain.WATERMAKER,
+            icon="mdi:water-plus",
+        ),
+    ),
+    PrefixRule(
+        "watermakers.",
+        ClassificationResult(
+            domain=SignalKDomain.WATERMAKER,
+            icon="mdi:water-plus",
+        ),
+    ),
     # ── Communications ──
-    PrefixRule("communication.", ClassificationResult(
-        domain=SignalKDomain.COMMUNICATIONS,
-        enabled_by_default=False,
-        icon="mdi:radio-handheld",
-    )),
-    PrefixRule("noforeignland.", ClassificationResult(
-        domain=SignalKDomain.COMMUNICATIONS,
-        enabled_by_default=False,
-        icon="mdi:earth",
-    )),
-
+    PrefixRule(
+        "communication.",
+        ClassificationResult(
+            domain=SignalKDomain.COMMUNICATIONS,
+            enabled_by_default=False,
+            icon="mdi:radio-handheld",
+        ),
+    ),
+    PrefixRule(
+        "noforeignland.",
+        ClassificationResult(
+            domain=SignalKDomain.COMMUNICATIONS,
+            enabled_by_default=False,
+            icon="mdi:earth",
+        ),
+    ),
     # ── Status / metadata ──
-    PrefixRule("design.", ClassificationResult(
-        domain=SignalKDomain.STATUS_METADATA,
-        enabled_by_default=False,
-        icon="mdi:information-outline",
-    )),
-    PrefixRule("electrical.displays.", ClassificationResult(
-        domain=SignalKDomain.STATUS_METADATA,
-        enabled_by_default=False,
-        icon="mdi:monitor",
-    )),
-    PrefixRule("entertainment.", ClassificationResult(
-        domain=SignalKDomain.STATUS_METADATA,
-        enabled_by_default=False,
-        icon="mdi:music",
-    )),
-    PrefixRule("steering.autopilot.", ClassificationResult(
-        domain=SignalKDomain.STATUS_METADATA,
-        enabled_by_default=True,
-        icon="mdi:robot",
-    )),
-    PrefixRule("steering.", ClassificationResult(
-        domain=SignalKDomain.STATUS_METADATA,
-        icon="mdi:steering",
-    )),
+    PrefixRule(
+        "design.",
+        ClassificationResult(
+            domain=SignalKDomain.STATUS_METADATA,
+            enabled_by_default=False,
+            icon="mdi:information-outline",
+        ),
+    ),
+    PrefixRule(
+        "electrical.displays.",
+        ClassificationResult(
+            domain=SignalKDomain.STATUS_METADATA,
+            enabled_by_default=False,
+            icon="mdi:monitor",
+        ),
+    ),
+    PrefixRule(
+        "entertainment.",
+        ClassificationResult(
+            domain=SignalKDomain.STATUS_METADATA,
+            enabled_by_default=False,
+            icon="mdi:music",
+        ),
+    ),
+    PrefixRule(
+        "steering.autopilot.",
+        ClassificationResult(
+            domain=SignalKDomain.STATUS_METADATA,
+            enabled_by_default=True,
+            icon="mdi:robot",
+        ),
+    ),
+    PrefixRule(
+        "steering.",
+        ClassificationResult(
+            domain=SignalKDomain.STATUS_METADATA,
+            icon="mdi:steering",
+        ),
+    ),
 ]
 
 
@@ -500,26 +610,39 @@ SEGMENT_HEURISTICS: dict[str, SignalKDomain] = {
 
 # Regex patterns for paths that should always be ignored
 _IGNORE_PATTERNS: list[re.Pattern[str]] = [
-    re.compile(r"\.values\."),      # source-specific fanout
-    re.compile(r"\.meta\."),        # metadata branches
-    re.compile(r"\.values$"),       # .values leaf
-    re.compile(r"\.meta$"),         # .meta leaf
+    re.compile(r"\.values\."),  # source-specific fanout
+    re.compile(r"\.meta\."),  # metadata branches
+    re.compile(r"\.values$"),  # .values leaf
+    re.compile(r"\.meta$"),  # .meta leaf
 ]
 
 # Vessel prefix patterns to strip during canonicalization
-_VESSEL_PREFIX_RE = re.compile(
-    r"^vessels\.(?:self|urn:mrn:(?:imo|signalk):[\w:]+)\."
-)
+_VESSEL_PREFIX_RE = re.compile(r"^vessels\.(?:self|urn:mrn:(?:imo|signalk):[\w:]+)\.")
 
 # CamelCase splitter for friendly names
 _CAMEL_RE = re.compile(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")
 
 # Top-level prefixes to strip for friendly names
 _FRIENDLY_NAME_STRIP_PREFIXES = {
-    "navigation", "environment", "electrical", "propulsion", "tanks",
-    "notifications", "steering", "communication", "design", "sails",
-    "performance", "entertainment", "sensors", "bilge", "pumps",
-    "watermaker", "watermakers", "noforeignland", "tank",
+    "navigation",
+    "environment",
+    "electrical",
+    "propulsion",
+    "tanks",
+    "notifications",
+    "steering",
+    "communication",
+    "design",
+    "sails",
+    "performance",
+    "entertainment",
+    "sensors",
+    "bilge",
+    "pumps",
+    "watermaker",
+    "watermakers",
+    "noforeignland",
+    "tank",
 }
 
 

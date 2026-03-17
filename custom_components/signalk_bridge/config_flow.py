@@ -141,9 +141,11 @@ class SignalKBridgeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="choose_server",
-            data_schema=vol.Schema({
-                vol.Required(CONF_USE_ADDON, default=True): bool,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_USE_ADDON, default=True): bool,
+                }
+            ),
         )
 
     async def async_step_manual_url(
@@ -162,9 +164,11 @@ class SignalKBridgeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="manual_url",
-            data_schema=vol.Schema({
-                vol.Required(CONF_BASE_URL, default=DEFAULT_BASE_URL): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_BASE_URL, default=DEFAULT_BASE_URL): str,
+                }
+            ),
             errors=errors,
         )
 
@@ -260,17 +264,20 @@ class SignalKBridgeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_CLIENT_ID: self._client_id,
                     CONF_ENTITY_PREFIX: self._entity_prefix,
                     CONF_USE_ADDON: (
-                        self._addon_available
-                        and self._base_url == self._addon_url
+                        self._addon_available and self._base_url == self._addon_url
                     ),
                 },
             )
 
         return self.async_show_form(
             step_id="prefix",
-            data_schema=vol.Schema({
-                vol.Required(CONF_ENTITY_PREFIX, default=DEFAULT_ENTITY_PREFIX): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_ENTITY_PREFIX, default=DEFAULT_ENTITY_PREFIX
+                    ): str,
+                }
+            ),
             errors=errors,
         )
 
@@ -308,21 +315,27 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(
-                vol.Schema({
-                    vol.Required(CONF_BASE_URL): str,
-                    vol.Required(CONF_ENTITY_PREFIX): str,
-                    vol.Required(CONF_ENABLE_NEW_SENSORS): bool,
-                    vol.Required(CONF_PUBLISH_PROFILE): vol.In({
-                        PublishProfile.CONSERVATIVE: "Conservative (lowest load)",
-                        PublishProfile.BALANCED: "Balanced",
-                        PublishProfile.REALTIME: "Realtime (highest load)",
-                    }),
-                    vol.Required(CONF_LOG_IGNORED_PATHS): bool,
-                    vol.Required(CONF_CREATE_DIAGNOSTIC_ENTITIES): bool,
-                }),
+                vol.Schema(
+                    {
+                        vol.Required(CONF_BASE_URL): str,
+                        vol.Required(CONF_ENTITY_PREFIX): str,
+                        vol.Required(CONF_ENABLE_NEW_SENSORS): bool,
+                        vol.Required(CONF_PUBLISH_PROFILE): vol.In(
+                            {
+                                PublishProfile.CONSERVATIVE: "Conservative (lowest load)",
+                                PublishProfile.BALANCED: "Balanced",
+                                PublishProfile.REALTIME: "Realtime (highest load)",
+                            }
+                        ),
+                        vol.Required(CONF_LOG_IGNORED_PATHS): bool,
+                        vol.Required(CONF_CREATE_DIAGNOSTIC_ENTITIES): bool,
+                    }
+                ),
                 {
                     CONF_BASE_URL: opts.get(CONF_BASE_URL, DEFAULT_BASE_URL),
-                    CONF_ENTITY_PREFIX: opts.get(CONF_ENTITY_PREFIX, DEFAULT_ENTITY_PREFIX),
+                    CONF_ENTITY_PREFIX: opts.get(
+                        CONF_ENTITY_PREFIX, DEFAULT_ENTITY_PREFIX
+                    ),
                     CONF_ENABLE_NEW_SENSORS: opts.get(
                         CONF_ENABLE_NEW_SENSORS, DEFAULT_ENABLE_NEW_SENSORS
                     ),
@@ -333,15 +346,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_LOG_IGNORED_PATHS, DEFAULT_LOG_IGNORED_PATHS
                     ),
                     CONF_CREATE_DIAGNOSTIC_ENTITIES: opts.get(
-                        CONF_CREATE_DIAGNOSTIC_ENTITIES, DEFAULT_CREATE_DIAGNOSTIC_ENTITIES
+                        CONF_CREATE_DIAGNOSTIC_ENTITIES,
+                        DEFAULT_CREATE_DIAGNOSTIC_ENTITIES,
                     ),
                 },
             ),
         )
 
-    async def async_step_general(
-        self, user_input: dict[str, Any]
-    ) -> FlowResult:
+    async def async_step_general(self, user_input: dict[str, Any]) -> FlowResult:
         """Process general options."""
         errors: dict[str, str] = {}
 
@@ -357,18 +369,22 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_show_form(
                 step_id="init",
                 data_schema=self.add_suggested_values_to_schema(
-                    vol.Schema({
-                        vol.Required(CONF_BASE_URL): str,
-                        vol.Required(CONF_ENTITY_PREFIX): str,
-                        vol.Required(CONF_ENABLE_NEW_SENSORS): bool,
-                        vol.Required(CONF_PUBLISH_PROFILE): vol.In({
-                            PublishProfile.CONSERVATIVE: "Conservative (lowest load)",
-                            PublishProfile.BALANCED: "Balanced",
-                            PublishProfile.REALTIME: "Realtime (highest load)",
-                        }),
-                        vol.Required(CONF_LOG_IGNORED_PATHS): bool,
-                        vol.Required(CONF_CREATE_DIAGNOSTIC_ENTITIES): bool,
-                    }),
+                    vol.Schema(
+                        {
+                            vol.Required(CONF_BASE_URL): str,
+                            vol.Required(CONF_ENTITY_PREFIX): str,
+                            vol.Required(CONF_ENABLE_NEW_SENSORS): bool,
+                            vol.Required(CONF_PUBLISH_PROFILE): vol.In(
+                                {
+                                    PublishProfile.CONSERVATIVE: "Conservative (lowest load)",
+                                    PublishProfile.BALANCED: "Balanced",
+                                    PublishProfile.REALTIME: "Realtime (highest load)",
+                                }
+                            ),
+                            vol.Required(CONF_LOG_IGNORED_PATHS): bool,
+                            vol.Required(CONF_CREATE_DIAGNOSTIC_ENTITIES): bool,
+                        }
+                    ),
                     user_input,
                 ),
                 errors=errors,
@@ -381,9 +397,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             CONF_ENTITY_PREFIX,
             self.config_entry.data.get(CONF_ENTITY_PREFIX, DEFAULT_ENTITY_PREFIX),
         )
-        self.hass.config_entries.async_update_entry(
-            self.config_entry, data=new_data
-        )
+        self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
 
         # Save options
         options = {
@@ -402,16 +416,15 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         }
 
         # Reload if URL or key settings changed
-        needs_reload = (
-            new_url != self.config_entry.data.get(CONF_BASE_URL)
-            or user_input.get(CONF_PUBLISH_PROFILE) != self.config_entry.options.get(CONF_PUBLISH_PROFILE)
+        needs_reload = new_url != self.config_entry.data.get(
+            CONF_BASE_URL
+        ) or user_input.get(CONF_PUBLISH_PROFILE) != self.config_entry.options.get(
+            CONF_PUBLISH_PROFILE
         )
 
         result = self.async_create_entry(title="", data=options)
 
         if needs_reload:
-            await self.hass.config_entries.async_reload(
-                self.config_entry.entry_id
-            )
+            await self.hass.config_entries.async_reload(self.config_entry.entry_id)
 
         return result

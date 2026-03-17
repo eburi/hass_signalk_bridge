@@ -50,54 +50,84 @@ class DomainPolicy:
 # Conservative: minimize HA writes, good for Raspberry Pi
 _CONSERVATIVE: dict[SignalKDomain, DomainPolicy] = {
     SignalKDomain.ALARM: DomainPolicy(
-        min_interval=0.0, max_interval=300.0, deadband=0.0,
+        min_interval=0.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=True,
     ),
     SignalKDomain.POSITION: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=25.0,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=25.0,
         enabled_by_default=True,
     ),
     SignalKDomain.NAVIGATION: DomainPolicy(
-        min_interval=2.0, max_interval=60.0, deadband=0.5,
+        min_interval=2.0,
+        max_interval=60.0,
+        deadband=0.5,
     ),
     SignalKDomain.WIND: DomainPolicy(
-        min_interval=2.0, max_interval=60.0, deadband=0.5,
+        min_interval=2.0,
+        max_interval=60.0,
+        deadband=0.5,
     ),
     SignalKDomain.ENVIRONMENT: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.1,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.1,
     ),
     SignalKDomain.TANK: DomainPolicy(
-        min_interval=60.0, max_interval=600.0, deadband=0.5,
+        min_interval=60.0,
+        max_interval=600.0,
+        deadband=0.5,
     ),
     SignalKDomain.BATTERY_DC: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.1,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.1,
     ),
     SignalKDomain.INVERTER_AC: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=0.5,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=0.5,
     ),
     SignalKDomain.ENGINE_PROPULSION: DomainPolicy(
-        min_interval=5.0, max_interval=120.0, deadband=1.0,
+        min_interval=5.0,
+        max_interval=120.0,
+        deadband=1.0,
     ),
     SignalKDomain.BILGE_PUMP: DomainPolicy(
-        min_interval=0.0, max_interval=300.0, deadband=0.0,
+        min_interval=0.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=True,
     ),
     SignalKDomain.WATERMAKER: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.5,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.5,
     ),
     SignalKDomain.COMMUNICATIONS: DomainPolicy(
-        min_interval=60.0, max_interval=600.0, deadband=0.0,
+        min_interval=60.0,
+        max_interval=600.0,
+        deadband=0.0,
     ),
     SignalKDomain.TIME: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.0,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
     SignalKDomain.STATUS_METADATA: DomainPolicy(
-        min_interval=30.0, max_interval=600.0, deadband=0.0,
+        min_interval=30.0,
+        max_interval=600.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
     SignalKDomain.UNSUPPORTED_IGNORE: DomainPolicy(
-        min_interval=60.0, max_interval=600.0, deadband=0.0,
+        min_interval=60.0,
+        max_interval=600.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
 }
@@ -105,54 +135,84 @@ _CONSERVATIVE: dict[SignalKDomain, DomainPolicy] = {
 # Balanced: moderate update rates
 _BALANCED: dict[SignalKDomain, DomainPolicy] = {
     SignalKDomain.ALARM: DomainPolicy(
-        min_interval=0.0, max_interval=300.0, deadband=0.0,
+        min_interval=0.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=True,
     ),
     SignalKDomain.POSITION: DomainPolicy(
-        min_interval=5.0, max_interval=60.0, deadband=10.0,
+        min_interval=5.0,
+        max_interval=60.0,
+        deadband=10.0,
         enabled_by_default=True,
     ),
     SignalKDomain.NAVIGATION: DomainPolicy(
-        min_interval=1.0, max_interval=30.0, deadband=0.3,
+        min_interval=1.0,
+        max_interval=30.0,
+        deadband=0.3,
     ),
     SignalKDomain.WIND: DomainPolicy(
-        min_interval=1.0, max_interval=30.0, deadband=0.3,
+        min_interval=1.0,
+        max_interval=30.0,
+        deadband=0.3,
     ),
     SignalKDomain.ENVIRONMENT: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=0.05,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=0.05,
     ),
     SignalKDomain.TANK: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.3,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.3,
     ),
     SignalKDomain.BATTERY_DC: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=0.05,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=0.05,
     ),
     SignalKDomain.INVERTER_AC: DomainPolicy(
-        min_interval=5.0, max_interval=60.0, deadband=0.3,
+        min_interval=5.0,
+        max_interval=60.0,
+        deadband=0.3,
     ),
     SignalKDomain.ENGINE_PROPULSION: DomainPolicy(
-        min_interval=2.0, max_interval=60.0, deadband=0.5,
+        min_interval=2.0,
+        max_interval=60.0,
+        deadband=0.5,
     ),
     SignalKDomain.BILGE_PUMP: DomainPolicy(
-        min_interval=0.0, max_interval=300.0, deadband=0.0,
+        min_interval=0.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=True,
     ),
     SignalKDomain.WATERMAKER: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=0.3,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=0.3,
     ),
     SignalKDomain.COMMUNICATIONS: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.0,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.0,
     ),
     SignalKDomain.TIME: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=0.0,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
     SignalKDomain.STATUS_METADATA: DomainPolicy(
-        min_interval=10.0, max_interval=300.0, deadband=0.0,
+        min_interval=10.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
     SignalKDomain.UNSUPPORTED_IGNORE: DomainPolicy(
-        min_interval=60.0, max_interval=600.0, deadband=0.0,
+        min_interval=60.0,
+        max_interval=600.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
 }
@@ -160,54 +220,84 @@ _BALANCED: dict[SignalKDomain, DomainPolicy] = {
 # Realtime: fastest updates, highest load
 _REALTIME: dict[SignalKDomain, DomainPolicy] = {
     SignalKDomain.ALARM: DomainPolicy(
-        min_interval=0.0, max_interval=120.0, deadband=0.0,
+        min_interval=0.0,
+        max_interval=120.0,
+        deadband=0.0,
         enabled_by_default=True,
     ),
     SignalKDomain.POSITION: DomainPolicy(
-        min_interval=2.0, max_interval=30.0, deadband=5.0,
+        min_interval=2.0,
+        max_interval=30.0,
+        deadband=5.0,
         enabled_by_default=True,
     ),
     SignalKDomain.NAVIGATION: DomainPolicy(
-        min_interval=0.5, max_interval=15.0, deadband=0.1,
+        min_interval=0.5,
+        max_interval=15.0,
+        deadband=0.1,
     ),
     SignalKDomain.WIND: DomainPolicy(
-        min_interval=0.5, max_interval=15.0, deadband=0.1,
+        min_interval=0.5,
+        max_interval=15.0,
+        deadband=0.1,
     ),
     SignalKDomain.ENVIRONMENT: DomainPolicy(
-        min_interval=5.0, max_interval=60.0, deadband=0.01,
+        min_interval=5.0,
+        max_interval=60.0,
+        deadband=0.01,
     ),
     SignalKDomain.TANK: DomainPolicy(
-        min_interval=15.0, max_interval=120.0, deadband=0.1,
+        min_interval=15.0,
+        max_interval=120.0,
+        deadband=0.1,
     ),
     SignalKDomain.BATTERY_DC: DomainPolicy(
-        min_interval=5.0, max_interval=60.0, deadband=0.02,
+        min_interval=5.0,
+        max_interval=60.0,
+        deadband=0.02,
     ),
     SignalKDomain.INVERTER_AC: DomainPolicy(
-        min_interval=2.0, max_interval=30.0, deadband=0.1,
+        min_interval=2.0,
+        max_interval=30.0,
+        deadband=0.1,
     ),
     SignalKDomain.ENGINE_PROPULSION: DomainPolicy(
-        min_interval=1.0, max_interval=30.0, deadband=0.2,
+        min_interval=1.0,
+        max_interval=30.0,
+        deadband=0.2,
     ),
     SignalKDomain.BILGE_PUMP: DomainPolicy(
-        min_interval=0.0, max_interval=120.0, deadband=0.0,
+        min_interval=0.0,
+        max_interval=120.0,
+        deadband=0.0,
         enabled_by_default=True,
     ),
     SignalKDomain.WATERMAKER: DomainPolicy(
-        min_interval=5.0, max_interval=60.0, deadband=0.1,
+        min_interval=5.0,
+        max_interval=60.0,
+        deadband=0.1,
     ),
     SignalKDomain.COMMUNICATIONS: DomainPolicy(
-        min_interval=10.0, max_interval=120.0, deadband=0.0,
+        min_interval=10.0,
+        max_interval=120.0,
+        deadband=0.0,
     ),
     SignalKDomain.TIME: DomainPolicy(
-        min_interval=5.0, max_interval=60.0, deadband=0.0,
+        min_interval=5.0,
+        max_interval=60.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
     SignalKDomain.STATUS_METADATA: DomainPolicy(
-        min_interval=5.0, max_interval=120.0, deadband=0.0,
+        min_interval=5.0,
+        max_interval=120.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
     SignalKDomain.UNSUPPORTED_IGNORE: DomainPolicy(
-        min_interval=30.0, max_interval=300.0, deadband=0.0,
+        min_interval=30.0,
+        max_interval=300.0,
+        deadband=0.0,
         enabled_by_default=False,
     ),
 }
@@ -251,7 +341,9 @@ class PublishPolicyEngine:
         profile: PublishProfile | str = PublishProfile.CONSERVATIVE,
     ) -> None:
         """Initialize with a base profile."""
-        self._policies: dict[SignalKDomain, DomainPolicy] = get_default_policies(profile)
+        self._policies: dict[SignalKDomain, DomainPolicy] = get_default_policies(
+            profile
+        )
         self._path_states: dict[str, PathState] = {}
         self._profile = PublishProfile(profile) if isinstance(profile, str) else profile
 
@@ -267,9 +359,14 @@ class PublishPolicyEngine:
 
     def get_policy(self, domain: SignalKDomain) -> DomainPolicy:
         """Get the policy for a domain, falling back to conservative defaults."""
-        return self._policies.get(domain, DomainPolicy(
-            min_interval=30.0, max_interval=300.0, deadband=0.5,
-        ))
+        return self._policies.get(
+            domain,
+            DomainPolicy(
+                min_interval=30.0,
+                max_interval=300.0,
+                deadband=0.5,
+            ),
+        )
 
     def set_policy(
         self,
@@ -283,11 +380,16 @@ class PublishPolicyEngine:
         """Update the policy for a domain. Returns the updated policy."""
         current = self.get_policy(domain)
         self._policies[domain] = DomainPolicy(
-            min_interval=min_interval if min_interval is not None else current.min_interval,
-            max_interval=max_interval if max_interval is not None else current.max_interval,
+            min_interval=min_interval
+            if min_interval is not None
+            else current.min_interval,
+            max_interval=max_interval
+            if max_interval is not None
+            else current.max_interval,
             deadband=deadband if deadband is not None else current.deadband,
             enabled_by_default=(
-                enabled_by_default if enabled_by_default is not None
+                enabled_by_default
+                if enabled_by_default is not None
                 else current.enabled_by_default
             ),
         )
@@ -296,9 +398,14 @@ class PublishPolicyEngine:
     def reset_policy(self, domain: SignalKDomain) -> DomainPolicy:
         """Reset a domain's policy to the current profile's default."""
         defaults = PROFILE_DEFAULTS.get(self._profile, _CONSERVATIVE)
-        default_policy = defaults.get(domain, DomainPolicy(
-            min_interval=30.0, max_interval=300.0, deadband=0.5,
-        ))
+        default_policy = defaults.get(
+            domain,
+            DomainPolicy(
+                min_interval=30.0,
+                max_interval=300.0,
+                deadband=0.5,
+            ),
+        )
         self._policies[domain] = default_policy.copy()
         return self._policies[domain]
 
@@ -370,14 +477,18 @@ class PublishPolicyEngine:
             return False
 
         # Check deadband (significant change)
-        if self._exceeds_deadband(state.last_published_value, new_value, policy.deadband):
+        if self._exceeds_deadband(
+            state.last_published_value, new_value, policy.deadband
+        ):
             state.last_published_value = new_value
             state.last_published_time = now
             return True
 
         return False
 
-    def record_publish(self, path: str, value: Any, now: Optional[float] = None) -> None:
+    def record_publish(
+        self, path: str, value: Any, now: Optional[float] = None
+    ) -> None:
         """Record that a value was published (used for reconnect flood control)."""
         if now is None:
             now = time.monotonic()

@@ -19,6 +19,7 @@ def _make_device_info():
 
 def _make_tracker(**kwargs):
     from unittest.mock import MagicMock
+
     hub = MagicMock()
     return SignalKDeviceTracker(
         hub=hub,
@@ -31,6 +32,7 @@ def _make_tracker(**kwargs):
 # ===================================================================
 # Initialization
 # ===================================================================
+
 
 class TestDeviceTrackerInit:
     def test_unique_id(self):
@@ -64,6 +66,7 @@ class TestDeviceTrackerInit:
 # source_type
 # ===================================================================
 
+
 class TestSourceType:
     def test_source_type_is_gps(self):
         tracker = _make_tracker()
@@ -74,18 +77,23 @@ class TestSourceType:
 # update_position
 # ===================================================================
 
+
 class TestUpdatePosition:
     def test_update_before_ready_ignored(self):
         tracker = _make_tracker()
         assert tracker._ready is False
-        tracker.update_position(51.5, -1.2, source="gps", timestamp="2024-01-01T00:00:00Z")
+        tracker.update_position(
+            51.5, -1.2, source="gps", timestamp="2024-01-01T00:00:00Z"
+        )
         assert tracker.latitude is None
         assert tracker.longitude is None
 
     def test_update_after_ready(self):
         tracker = _make_tracker()
         tracker._ready = True
-        tracker.update_position(51.5, -1.2, source="gps", timestamp="2024-01-01T00:00:00Z")
+        tracker.update_position(
+            51.5, -1.2, source="gps", timestamp="2024-01-01T00:00:00Z"
+        )
         assert tracker.latitude == 51.5
         assert tracker.longitude == -1.2
         assert tracker._source_label == "gps"
@@ -111,6 +119,7 @@ class TestUpdatePosition:
 # ===================================================================
 # extra_state_attributes
 # ===================================================================
+
 
 class TestExtraStateAttributes:
     def test_default_attributes(self):
@@ -147,6 +156,7 @@ class TestExtraStateAttributes:
 # async lifecycle
 # ===================================================================
 
+
 class TestLifecycle:
     @pytest.mark.asyncio
     async def test_added_to_hass_sets_ready(self):
@@ -167,6 +177,7 @@ class TestLifecycle:
 # ===================================================================
 # async_setup_entry
 # ===================================================================
+
 
 class TestAsyncSetupEntry:
     @pytest.mark.asyncio

@@ -1,11 +1,8 @@
 """Tests for publish_policy.py — policy engine, profiles, deadband, intervals."""
 
-import pytest
-
 from custom_components.signalk_bridge.const import PublishProfile, SignalKDomain
 from custom_components.signalk_bridge.publish_policy import (
     DomainPolicy,
-    PathState,
     PublishPolicyEngine,
     PROFILE_DEFAULTS,
     get_default_policies,
@@ -16,6 +13,7 @@ from custom_components.signalk_bridge.publish_policy import (
 # DomainPolicy
 # ===================================================================
 
+
 class TestDomainPolicy:
     def test_create(self):
         p = DomainPolicy(min_interval=1.0, max_interval=60.0, deadband=0.5)
@@ -25,7 +23,9 @@ class TestDomainPolicy:
         assert p.enabled_by_default is True
 
     def test_copy(self):
-        p = DomainPolicy(min_interval=2.0, max_interval=120.0, deadband=0.1, enabled_by_default=False)
+        p = DomainPolicy(
+            min_interval=2.0, max_interval=120.0, deadband=0.1, enabled_by_default=False
+        )
         c = p.copy()
         assert c.min_interval == 2.0
         assert c.max_interval == 120.0
@@ -37,6 +37,7 @@ class TestDomainPolicy:
 # ===================================================================
 # Profile defaults
 # ===================================================================
+
 
 class TestProfileDefaults:
     def test_all_profiles_exist(self):
@@ -65,12 +66,20 @@ class TestProfileDefaults:
         p1 = get_default_policies(PublishProfile.CONSERVATIVE)
         p2 = get_default_policies(PublishProfile.CONSERVATIVE)
         # Should be equal but not the same objects
-        assert p1[SignalKDomain.NAVIGATION].min_interval == p2[SignalKDomain.NAVIGATION].min_interval
+        assert (
+            p1[SignalKDomain.NAVIGATION].min_interval
+            == p2[SignalKDomain.NAVIGATION].min_interval
+        )
         assert p1[SignalKDomain.NAVIGATION] is not p2[SignalKDomain.NAVIGATION]
 
     def test_get_default_policies_string_input(self):
         p = get_default_policies("balanced")
-        assert p[SignalKDomain.NAVIGATION].min_interval == PROFILE_DEFAULTS[PublishProfile.BALANCED][SignalKDomain.NAVIGATION].min_interval
+        assert (
+            p[SignalKDomain.NAVIGATION].min_interval
+            == PROFILE_DEFAULTS[PublishProfile.BALANCED][
+                SignalKDomain.NAVIGATION
+            ].min_interval
+        )
 
     def test_alarm_always_immediate(self):
         """Alarm domain should have min_interval=0 across all profiles."""
@@ -81,6 +90,7 @@ class TestProfileDefaults:
 # ===================================================================
 # PublishPolicyEngine — initialization
 # ===================================================================
+
 
 class TestEngineInit:
     def test_default_profile(self):
@@ -100,10 +110,13 @@ class TestEngineInit:
 # should_publish — first value always publishes
 # ===================================================================
 
+
 class TestShouldPublishFirstValue:
     def test_first_value_always_publishes(self):
         engine = PublishPolicyEngine()
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0
+        )
         assert result is True
 
     def test_first_value_stores_state(self):
@@ -119,13 +132,16 @@ class TestShouldPublishFirstValue:
 # should_publish — min_interval gate
 # ===================================================================
 
+
 class TestShouldPublishMinInterval:
     def test_within_min_interval_blocked(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         # Navigation min_interval is 2.0 for conservative
         engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
         # 1 second later — within min_interval
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 10.0, now=101.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 10.0, now=101.0
+        )
         assert result is False
 
     def test_past_min_interval_with_change(self):
@@ -133,7 +149,9 @@ class TestShouldPublishMinInterval:
         # Navigation: min_interval=2.0, deadband=0.5
         engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
         # 3 seconds later, value changed by 1.0 (> deadband 0.5)
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 6.0, now=103.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 6.0, now=103.0
+        )
         assert result is True
 
 
@@ -141,42 +159,57 @@ class TestShouldPublishMinInterval:
 # should_publish — deadband
 # ===================================================================
 
+
 class TestShouldPublishDeadband:
     def test_change_below_deadband_blocked(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         # Navigation: min_interval=2.0, deadband=0.5
         engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
         # Past min_interval but change < deadband
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.3, now=103.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 5.3, now=103.0
+        )
         assert result is False
 
     def test_change_at_deadband_publishes(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
         # Exactly at deadband (0.5)
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.5, now=103.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 5.5, now=103.0
+        )
         assert result is True
 
     def test_zero_deadband_any_change_publishes(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         # Alarm domain has deadband=0.0
         engine.should_publish("alarm.test", SignalKDomain.ALARM, "normal", now=100.0)
-        result = engine.should_publish("alarm.test", SignalKDomain.ALARM, "critical", now=100.1)
+        result = engine.should_publish(
+            "alarm.test", SignalKDomain.ALARM, "critical", now=100.1
+        )
         assert result is True
 
     def test_non_numeric_change(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         # Status metadata: min_interval=30.0, deadband=0.0
-        engine.should_publish("status.test", SignalKDomain.STATUS_METADATA, "idle", now=100.0)
+        engine.should_publish(
+            "status.test", SignalKDomain.STATUS_METADATA, "idle", now=100.0
+        )
         # Past min_interval, string changed
-        result = engine.should_publish("status.test", SignalKDomain.STATUS_METADATA, "active", now=131.0)
+        result = engine.should_publish(
+            "status.test", SignalKDomain.STATUS_METADATA, "active", now=131.0
+        )
         assert result is True
 
     def test_non_numeric_no_change_blocked(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
-        engine.should_publish("status.test", SignalKDomain.STATUS_METADATA, "idle", now=100.0)
+        engine.should_publish(
+            "status.test", SignalKDomain.STATUS_METADATA, "idle", now=100.0
+        )
         # Same value, past min_interval but before max_interval
-        result = engine.should_publish("status.test", SignalKDomain.STATUS_METADATA, "idle", now=131.0)
+        result = engine.should_publish(
+            "status.test", SignalKDomain.STATUS_METADATA, "idle", now=131.0
+        )
         assert result is False
 
 
@@ -184,13 +217,16 @@ class TestShouldPublishDeadband:
 # should_publish — max_interval (heartbeat)
 # ===================================================================
 
+
 class TestShouldPublishMaxInterval:
     def test_max_interval_forces_publish(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         # Navigation: max_interval=60.0
         engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
         # Same value, well past max_interval
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=161.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 5.0, now=161.0
+        )
         assert result is True
 
     def test_just_before_max_interval_blocked(self):
@@ -198,7 +234,9 @@ class TestShouldPublishMaxInterval:
         # Navigation: max_interval=60.0, deadband=0.5
         engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=100.0)
         # Same value (no deadband exceed), just before max_interval
-        result = engine.should_publish("nav.sog", SignalKDomain.NAVIGATION, 5.0, now=159.0)
+        result = engine.should_publish(
+            "nav.sog", SignalKDomain.NAVIGATION, 5.0, now=159.0
+        )
         assert result is False
 
 
@@ -206,14 +244,18 @@ class TestShouldPublishMaxInterval:
 # should_publish — immediate flag
 # ===================================================================
 
+
 class TestShouldPublishImmediate:
     def test_immediate_bypasses_throttle(self):
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         engine.should_publish("alarm.fire", SignalKDomain.ALARM, "normal", now=100.0)
         # Immediate flag — publish even within min_interval
         result = engine.should_publish(
-            "alarm.fire", SignalKDomain.ALARM, "critical",
-            immediate=True, now=100.001,
+            "alarm.fire",
+            SignalKDomain.ALARM,
+            "critical",
+            immediate=True,
+            now=100.001,
         )
         assert result is True
 
@@ -221,8 +263,11 @@ class TestShouldPublishImmediate:
         engine = PublishPolicyEngine(profile=PublishProfile.CONSERVATIVE)
         engine.should_publish("alarm.fire", SignalKDomain.ALARM, "normal", now=100.0)
         engine.should_publish(
-            "alarm.fire", SignalKDomain.ALARM, "critical",
-            immediate=True, now=101.0,
+            "alarm.fire",
+            SignalKDomain.ALARM,
+            "critical",
+            immediate=True,
+            now=101.0,
         )
         state = engine.get_path_state("alarm.fire")
         assert state.last_published_value == "critical"
@@ -232,6 +277,7 @@ class TestShouldPublishImmediate:
 # ===================================================================
 # set_policy / reset_policy
 # ===================================================================
+
 
 class TestSetResetPolicy:
     def test_set_policy_partial(self):
@@ -263,7 +309,9 @@ class TestSetResetPolicy:
         assert engine.get_policy(SignalKDomain.NAVIGATION).min_interval == 99.0
         # Reset
         result = engine.reset_policy(SignalKDomain.NAVIGATION)
-        default = PROFILE_DEFAULTS[PublishProfile.CONSERVATIVE][SignalKDomain.NAVIGATION]
+        default = PROFILE_DEFAULTS[PublishProfile.CONSERVATIVE][
+            SignalKDomain.NAVIGATION
+        ]
         assert result.min_interval == default.min_interval
 
     def test_set_policy_for_unknown_domain_uses_fallback(self):
@@ -278,6 +326,7 @@ class TestSetResetPolicy:
 # ===================================================================
 # set_profile
 # ===================================================================
+
 
 class TestSetProfile:
     def test_switch_profile(self):
@@ -307,6 +356,7 @@ class TestSetProfile:
 # clear_path_states
 # ===================================================================
 
+
 class TestClearPathStates:
     def test_clear(self):
         engine = PublishPolicyEngine()
@@ -332,6 +382,7 @@ class TestClearPathStates:
 # record_publish
 # ===================================================================
 
+
 class TestRecordPublish:
     def test_record_publish_new_path(self):
         engine = PublishPolicyEngine()
@@ -352,6 +403,7 @@ class TestRecordPublish:
 # ===================================================================
 # dump_state
 # ===================================================================
+
 
 class TestDumpState:
     def test_dump_state_structure(self):
@@ -378,6 +430,7 @@ class TestDumpState:
 # ===================================================================
 # _exceeds_deadband edge cases
 # ===================================================================
+
 
 class TestExceedsDeadband:
     def test_none_old_value(self):
