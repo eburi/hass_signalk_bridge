@@ -489,8 +489,6 @@ These are conceptual requirements; exact service names may vary, but keep them c
 
 - `signalk.rescan_paths`
 - `signalk.reclassify_paths`
-- `signalk.enable_entities`
-- `signalk.disable_entities`
 - `signalk.dump_runtime_state`
 
 ### Developer Tools support expectations

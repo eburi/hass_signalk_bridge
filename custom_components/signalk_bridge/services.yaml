@@ -198,36 +198,6 @@ reclassify_paths:
     Re-run the classifier on all known paths.
     Useful after the classifier rules have been updated.
 
-enable_entities:
-  name: Enable Entities
-  description: >-
-    Enable one or more SignalK entities by entity ID.
-  fields:
-    entity_ids:
-      name: Entity IDs
-      description: "Entity ID or list of entity IDs to enable"
-      required: true
-      example: "sensor.signalk_speed_over_ground"
-      selector:
-        entity:
-          multiple: true
-          integration: signalk_bridge
-
-disable_entities:
-  name: Disable Entities
-  description: >-
-    Disable one or more SignalK entities by entity ID.
-  fields:
-    entity_ids:
-      name: Entity IDs
-      description: "Entity ID or list of entity IDs to disable"
-      required: true
-      example: "sensor.signalk_navigation_datetime"
-      selector:
-        entity:
-          multiple: true
-          integration: signalk_bridge
-
 dump_runtime_state:
   name: Dump Runtime State
   description: >-

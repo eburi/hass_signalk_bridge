@@ -255,24 +255,6 @@ class TestSensorUpdateMeta:
 
 
 # ===================================================================
-# set_enabled
-# ===================================================================
-
-
-class TestSensorSetEnabled:
-    def test_set_enabled_true(self):
-        sensor = _make_sensor(entity_enabled=False)
-        assert sensor._attr_entity_registry_enabled_default is False
-        sensor.set_enabled(True)
-        assert sensor._attr_entity_registry_enabled_default is True
-
-    def test_set_enabled_false(self):
-        sensor = _make_sensor(entity_enabled=True)
-        sensor.set_enabled(False)
-        assert sensor._attr_entity_registry_enabled_default is False
-
-
-# ===================================================================
 # extra_state_attributes
 # ===================================================================
 

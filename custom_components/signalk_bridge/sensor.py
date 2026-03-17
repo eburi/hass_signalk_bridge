@@ -204,11 +204,6 @@ class SignalKSensor(SensorEntity):
         if sk_units:
             self._mapping = get_sensor_mapping(self._sk_path, sk_units)
 
-    @callback
-    def set_enabled(self, enabled: bool) -> None:
-        """Set the entity enabled state (from service call)."""
-        self._attr_entity_registry_enabled_default = enabled
-
     async def async_added_to_hass(self) -> None:
         """Mark entity as ready when added to HA."""
         self._ready = True

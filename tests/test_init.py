@@ -17,8 +17,6 @@ from custom_components.signalk_bridge import (
     SERVICE_SET_DISCOVERY_DEFAULTS,
     SERVICE_RESCAN_PATHS,
     SERVICE_RECLASSIFY_PATHS,
-    SERVICE_ENABLE_ENTITIES,
-    SERVICE_DISABLE_ENTITIES,
     SERVICE_DUMP_RUNTIME_STATE,
     PLATFORMS,
 )
@@ -514,8 +512,6 @@ class TestAsyncSetup:
         assert SERVICE_SET_DISCOVERY_DEFAULTS in service_names
         assert SERVICE_RESCAN_PATHS in service_names
         assert SERVICE_RECLASSIFY_PATHS in service_names
-        assert SERVICE_ENABLE_ENTITIES in service_names
-        assert SERVICE_DISABLE_ENTITIES in service_names
         assert SERVICE_DUMP_RUNTIME_STATE in service_names
 
 

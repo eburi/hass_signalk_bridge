@@ -153,7 +153,7 @@ Each profile defines `min_interval` / `max_interval` / `deadband` per domain. Sw
 
 ## Entities
 
-Entities are created dynamically as SignalK paths arrive. New entities start **disabled** unless `enable_new_sensors_by_default` is turned on. Enable them individually in the entity registry or via the `enable_entities` service.
+Entities are created dynamically as SignalK paths arrive. New entities start **disabled** unless `enable_new_sensors_by_default` is turned on. Enable them individually via the Home Assistant entity registry.
 
 Example entities after connecting to a typical vessel:
 
@@ -263,19 +263,6 @@ Re-run the classifier on all known paths (useful after an integration update add
 
 ```yaml
 service: signalk_bridge.reclassify_paths
-```
-
-### signalk_bridge.enable_entities / disable_entities
-
-Batch-enable or disable entities.
-
-```yaml
-service: signalk_bridge.enable_entities
-data:
-  entity_ids:
-    - sensor.signalk_speed_over_ground
-    - sensor.signalk_depth_below_keel
-    - sensor.signalk_wind_speed_apparent
 ```
 
 ### signalk_bridge.dump_runtime_state

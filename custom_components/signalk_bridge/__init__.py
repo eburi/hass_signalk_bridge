@@ -61,8 +61,6 @@ SERVICE_RESET_DOMAIN_POLICY = "reset_domain_policy"
 SERVICE_SET_DISCOVERY_DEFAULTS = "set_discovery_defaults"
 SERVICE_RESCAN_PATHS = "rescan_paths"
 SERVICE_RECLASSIFY_PATHS = "reclassify_paths"
-SERVICE_ENABLE_ENTITIES = "enable_entities"
-SERVICE_DISABLE_ENTITIES = "disable_entities"
 SERVICE_DUMP_RUNTIME_STATE = "dump_runtime_state"
 
 
@@ -105,12 +103,6 @@ SERVICE_SET_DISCOVERY_DEFAULTS_SCHEMA = vol.Schema(
         vol.Optional("enable_new_sensors_by_default"): cv.boolean,
         vol.Optional("publish_profile"): cv.string,
         vol.Optional("log_ignored_paths"): cv.boolean,
-    }
-)
-
-SERVICE_ENTITY_LIST_SCHEMA = vol.Schema(
-    {
-        vol.Required("entity_ids"): vol.Any(cv.string, [cv.string]),
     }
 )
 
@@ -785,30 +777,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             count = hub.reclassify_paths()
             _LOGGER.info("Reclassified %d paths", count)
 
-    # ── Entity enable/disable services ──
-
-    async def handle_enable_entities(call: ServiceCall) -> None:
-        entity_ids = call.data["entity_ids"]
-        if isinstance(entity_ids, str):
-            entity_ids = [entity_ids]
-        for hub in _get_all_hubs(hass):
-            for eid in entity_ids:
-                for path, sensor in hub.sensors.items():
-                    if hasattr(sensor, "entity_id") and sensor.entity_id == eid:
-                        sensor.set_enabled(True)
-                        _LOGGER.info("Enabled entity: %s", eid)
-
-    async def handle_disable_entities(call: ServiceCall) -> None:
-        entity_ids = call.data["entity_ids"]
-        if isinstance(entity_ids, str):
-            entity_ids = [entity_ids]
-        for hub in _get_all_hubs(hass):
-            for eid in entity_ids:
-                for path, sensor in hub.sensors.items():
-                    if hasattr(sensor, "entity_id") and sensor.entity_id == eid:
-                        sensor.set_enabled(False)
-                        _LOGGER.info("Disabled entity: %s", eid)
-
     # ── Debug service ──
 
     async def handle_dump_runtime_state(call: ServiceCall) -> None:
@@ -843,8 +811,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         ),
         (SERVICE_RESCAN_PATHS, handle_rescan_paths, SERVICE_EMPTY_SCHEMA),
         (SERVICE_RECLASSIFY_PATHS, handle_reclassify_paths, SERVICE_EMPTY_SCHEMA),
-        (SERVICE_ENABLE_ENTITIES, handle_enable_entities, SERVICE_ENTITY_LIST_SCHEMA),
-        (SERVICE_DISABLE_ENTITIES, handle_disable_entities, SERVICE_ENTITY_LIST_SCHEMA),
         (SERVICE_DUMP_RUNTIME_STATE, handle_dump_runtime_state, SERVICE_EMPTY_SCHEMA),
     ]
 

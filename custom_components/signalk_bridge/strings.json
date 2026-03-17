@@ -149,26 +149,6 @@
       "name": "Reclassify Paths",
       "description": "Re-run the classifier on all known paths."
     },
-    "enable_entities": {
-      "name": "Enable Entities",
-      "description": "Enable one or more SignalK entities.",
-      "fields": {
-        "entity_ids": {
-          "name": "Entity IDs",
-          "description": "Entity ID or list of entity IDs to enable."
-        }
-      }
-    },
-    "disable_entities": {
-      "name": "Disable Entities",
-      "description": "Disable one or more SignalK entities.",
-      "fields": {
-        "entity_ids": {
-          "name": "Entity IDs",
-          "description": "Entity ID or list of entity IDs to disable."
-        }
-      }
-    },
     "dump_runtime_state": {
       "name": "Dump Runtime State",
       "description": "Dump current runtime state to log and fire an event."
