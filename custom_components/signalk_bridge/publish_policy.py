@@ -16,8 +16,7 @@ from __future__ import annotations
 
 import logging
 import time
-from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Optional
 
 from .const import PublishProfile, SignalKDomain

@@ -1,6 +1,7 @@
 {
   "domain": "signalk_bridge",
   "name": "SignalK Bridge",
+  "after_dependencies": ["hassio"],
   "codeowners": ["@eburi"],
   "config_flow": true,
   "dependencies": [],

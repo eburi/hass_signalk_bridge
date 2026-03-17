@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 from typing import Any
 
 import voluptuous as vol
@@ -27,7 +26,6 @@ from .classifier import (
     canonicalize_path,
     classify_path,
     is_ignored_path,
-    path_to_friendly_name,
 )
 from .const import (
     CONF_BASE_URL,
@@ -44,7 +42,6 @@ from .const import (
     DEFAULT_LOG_IGNORED_PATHS,
     DEFAULT_PUBLISH_PROFILE,
     DOMAIN,
-    PublishProfile,
     SignalKDomain,
 )
 from .publish_policy import DomainPolicy, PublishPolicyEngine
@@ -53,6 +50,8 @@ from .signalk_client import SignalKClient
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 # Service names
 SERVICE_PUT_VALUE = "put_value"
@@ -579,7 +578,6 @@ class SignalKHub:
         count = 0
         paths = list(self._classifications.keys()) + list(self._ignored_paths)
         self._classifications.clear()
-        old_ignored = set(self._ignored_paths)
         self._ignored_paths.clear()
 
         for path in paths:

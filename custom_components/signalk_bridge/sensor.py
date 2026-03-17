@@ -13,13 +13,10 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from homeassistant.components.sensor import (
-    SensorDeviceClass,
     SensorEntity,
-    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
@@ -28,7 +25,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .classifier import ClassificationResult, path_to_friendly_name
-from .const import DOMAIN, STALE_TIMEOUT_S
+from .const import STALE_TIMEOUT_S
 from .unit_mapping import SensorMapping, convert_value, get_sensor_mapping
 
 _LOGGER = logging.getLogger(__name__)

@@ -371,9 +371,19 @@ class _CV:
             return val.lower() in ("true", "yes", "1", "on")
         return bool(val)
 
+    @staticmethod
+    def config_entry_only_config_schema(domain):
+        """Return a schema that rejects YAML config for config-entry-only integrations."""
+        def _config_entry_only(config):
+            if domain in config:
+                raise ValueError(f"The {domain} integration does not support YAML configuration")
+            return config
+        return _config_entry_only
+
 _make_module("homeassistant.helpers.config_validation", {
     "string": _CV.string,
     "boolean": _CV.boolean,
+    "config_entry_only_config_schema": _CV.config_entry_only_config_schema,
 })
 
 # For `import homeassistant.helpers.config_validation as cv`
