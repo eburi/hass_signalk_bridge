@@ -1,14 +1,20 @@
-"""Sensor platform for SignalK Bridge.
+"""SignalK Bridge sensor platform.
 
-Dynamically creates sensors as SignalK delta values arrive.
-Each SignalK path becomes an HA sensor entity under the vessel self device.
+Sensors are created dynamically as SignalK delta updates arrive.
+Each sensor maps to a single canonical SignalK path and belongs to
+the vessel self device.
+
+Throttling is NOT done here — the publish-policy engine in the hub
+decides whether a value update should be published. The sensor's
+`publish_value` method is only called when the policy engine approves.
 """
 
 from __future__ import annotations
 
 import logging
+import time
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Optional
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -21,21 +27,11 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import CONF_ENTITY_PREFIX, DEFAULT_ENTITY_PREFIX, DOMAIN
-from .unit_mapping import (
-    SensorMapping,
-    convert_value,
-    get_sensor_mapping,
-    path_to_friendly_name,
-)
+from .classifier import ClassificationResult, path_to_friendly_name
+from .const import DOMAIN, STALE_TIMEOUT_S
+from .unit_mapping import SensorMapping, convert_value, get_sensor_mapping
 
 _LOGGER = logging.getLogger(__name__)
-
-# How long before a sensor is marked unavailable if no updates received
-STALE_TIMEOUT = timedelta(minutes=10)
-
-# Throttle state updates to HA (minimum interval between writes)
-MIN_UPDATE_INTERVAL = timedelta(seconds=1)
 
 
 async def async_setup_entry(
@@ -43,17 +39,17 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up SignalK Bridge sensors from a config entry."""
+    """Set up SignalK sensors from a config entry."""
     hub = entry.runtime_data
     await hub.register_sensor_platform(async_add_entities)
 
 
 class SignalKSensor(SensorEntity):
-    """Representation of a SignalK path as a HomeAssistant sensor.
+    """A sensor representing a single canonical SignalK path.
 
-    Each instance corresponds to a single SignalK path (e.g.
-    'navigation.speedOverGround') and is dynamically created when
-    that path is first seen in a delta update.
+    Created dynamically by the hub when a new path is first seen.
+    The hub's publish-policy engine determines when `publish_value`
+    is called — this sensor does NOT do its own throttling.
     """
 
     _attr_should_poll = False
@@ -61,87 +57,68 @@ class SignalKSensor(SensorEntity):
 
     def __init__(
         self,
+        hub: Any,  # SignalKHub (avoid circular import)
         path: str,
+        classification: ClassificationResult,
         initial_value: Any,
         meta: dict[str, Any],
         entity_prefix: str,
         device_info: DeviceInfo,
         config_entry_id: str,
+        entity_enabled: bool = True,
     ) -> None:
-        """Initialize the sensor.
-
-        Args:
-            path: SignalK dotted path (e.g. 'navigation.speedOverGround').
-            initial_value: First value received for this path.
-            meta: SignalK metadata dict (units, description, displayName, etc.).
-            entity_prefix: User-configured prefix for entity IDs.
-            device_info: DeviceInfo for the parent vessel device.
-            config_entry_id: The config entry ID this sensor belongs to.
-        """
-        self._path = path
+        """Initialize the sensor."""
+        self._hub = hub
+        self._sk_path = path
+        self._classification = classification
         self._meta = meta
-        self._entity_prefix = entity_prefix
-        self._last_updated = datetime.now()
-        self._last_ha_update = datetime.min
+        self._source: str = ""
+        self._timestamp: str | None = None
+        self._last_update: float = 0.0
         self._ready = False
 
-        # Determine SK unit from meta
-        sk_units = meta.get("units")
+        # Entity properties
+        self._attr_unique_id = f"{entity_prefix}_{path.replace('.', '_')}"
+        self._attr_device_info = device_info
+        self._attr_entity_registry_enabled_default = entity_enabled
 
-        # Get the mapping for this path/unit
-        self._mapping: SensorMapping = get_sensor_mapping(path, sk_units)
-
-        # Unique ID: prefix + path (dots replaced with underscores)
-        safe_path = path.replace(".", "_").lower()
-        self._attr_unique_id = f"{DOMAIN}_{entity_prefix}_{safe_path}"
-
-        # Entity ID will be: sensor.<prefix>_<path_underscored>
-        self.entity_id = f"sensor.{entity_prefix}_{safe_path}"
-
-        # Name: Use meta displayName if available, else generate from path
-        display_name = meta.get("displayName") or meta.get("longName")
-        if display_name:
-            self._attr_name = display_name
+        # Determine name from classification or path
+        if classification.friendly_name:
+            self._attr_name = classification.friendly_name
         else:
             self._attr_name = path_to_friendly_name(path)
 
-        # Device class and state class from mapping
-        if self._mapping.device_class:
+        # Icon from classification
+        if classification.icon:
+            self._attr_icon = classification.icon
+
+        # Look up sensor mapping for units / device class
+        sk_units = meta.get("units", "")
+        self._mapping = get_sensor_mapping(path, sk_units)
+
+        if self._mapping.device_class is not None:
             self._attr_device_class = self._mapping.device_class
-
-        if self._mapping.state_class:
+        if self._mapping.state_class is not None:
             self._attr_state_class = self._mapping.state_class
-
-        # Native unit from mapping
-        if self._mapping.native_unit:
+        if self._mapping.native_unit is not None:
             self._attr_native_unit_of_measurement = self._mapping.native_unit
-
-        # Icon override
-        if self._mapping.icon:
-            self._attr_icon = self._mapping.icon
-
-        # Display precision
         if self._mapping.suggested_display_precision is not None:
             self._attr_suggested_display_precision = (
                 self._mapping.suggested_display_precision
             )
-
-        # Device info — parent vessel device
-        self._attr_device_info = device_info
+        # Icon from mapping if not set by classification
+        if self._mapping.icon and not classification.icon:
+            self._attr_icon = self._mapping.icon
 
         # Set initial value
-        self._raw_value = initial_value
         self._attr_native_value = self._convert(initial_value)
-
-        # Extra state attributes
-        self._source = None
-        self._sk_timestamp = None
+        self._last_update = time.monotonic()
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Return extra state attributes."""
+        """Return extra state attributes with SK metadata."""
         attrs: dict[str, Any] = {
-            "signalk_path": self._path,
+            "signalk_path": self._sk_path,
         }
         if self._meta.get("units"):
             attrs["signalk_units"] = self._meta["units"]
@@ -149,126 +126,103 @@ class SignalKSensor(SensorEntity):
             attrs["signalk_description"] = self._meta["description"]
         if self._source:
             attrs["signalk_source"] = self._source
-        if self._sk_timestamp:
-            attrs["signalk_timestamp"] = self._sk_timestamp
+        if self._timestamp:
+            attrs["signalk_timestamp"] = self._timestamp
+        if self._classification:
+            attrs["signalk_domain"] = self._classification.domain
         return attrs
 
     @property
     def available(self) -> bool:
-        """Return True if the sensor has received data recently."""
+        """Return True if recently updated."""
         if not self._ready:
             return True
-        return (datetime.now() - self._last_updated) < STALE_TIMEOUT
+        if self._last_update == 0.0:
+            return True
+        return (time.monotonic() - self._last_update) < STALE_TIMEOUT_S
 
     @property
     def signalk_path(self) -> str:
-        """Return the SignalK path this sensor represents."""
-        return self._path
+        """Return the SignalK path."""
+        return self._sk_path
+
+    @property
+    def classification(self) -> ClassificationResult:
+        """Return the classification result."""
+        return self._classification
 
     def _convert(self, value: Any) -> Any:
-        """Convert a raw SignalK value to the HA native value.
-
-        Handles:
-        - Numeric values with conversion factors (e.g. rad -> deg)
-        - Object values (e.g. position {latitude, longitude}) -> string
-        - String/enum values -> pass-through
-        - None -> None
-        """
+        """Convert a raw SignalK value to the HA-appropriate format."""
         if value is None:
             return None
 
-        # Handle object/dict values (position, attitude, etc.)
+        # Dict values: position, attitude, other objects
         if isinstance(value, dict):
-            # For position, format as "lat, lon"
             if "latitude" in value and "longitude" in value:
-                lat = round(value["latitude"], 6)
-                lon = round(value["longitude"], 6)
-                return f"{lat}, {lon}"
-            # For attitude, format as a readable string
+                lat = value["latitude"]
+                lon = value["longitude"]
+                return f"{lat:.6f}, {lon:.6f}"
             if "roll" in value or "pitch" in value or "yaw" in value:
                 parts = []
                 for key in ("roll", "pitch", "yaw"):
-                    if key in value and value[key] is not None:
-                        deg = round(value[key] * 57.2957795131, 1)
-                        parts.append(f"{key}={deg}°")
+                    if key in value:
+                        deg = convert_value(value[key], self._mapping) or 0.0
+                        parts.append(f"{key}={deg:.1f}°")
                 return " ".join(parts)
-            # Generic dict: serialize to string
             return str(value)
 
-        # Handle numeric values
+        # Numeric conversion
         if isinstance(value, (int, float)):
             return convert_value(value, self._mapping)
 
-        # String/bool/other: pass through
+        # String/other passthrough
         return value
 
     @callback
-    def update_value(
+    def publish_value(
         self,
         value: Any,
-        source: str | None = None,
+        source: str = "",
         timestamp: str | None = None,
     ) -> None:
-        """Update the sensor value from a SignalK delta.
+        """Publish a new value to HA state.
 
-        Called by the hub when a new delta arrives for this path.
-        Respects throttling to avoid overwhelming HA.
+        Called by the hub ONLY when the publish-policy engine approves.
+        No throttling needed here.
         """
         if not self._ready:
             return
 
-        self._raw_value = value
-        self._last_updated = datetime.now()
-        if source:
-            self._source = source
-        if timestamp:
-            self._sk_timestamp = timestamp
-
-        new_value = self._convert(value)
-
-        # Throttle updates
-        now = datetime.now()
-        if (now - self._last_ha_update) < MIN_UPDATE_INTERVAL:
-            # Still update the internal value, just don't push to HA
-            self._attr_native_value = new_value
-            return
-
-        old_value = self._attr_native_value
-        self._attr_native_value = new_value
-
-        if new_value != old_value or (now - self._last_ha_update) > timedelta(
-            minutes=1
-        ):
-            self._last_ha_update = now
-            self.async_write_ha_state()
+        self._source = source
+        self._timestamp = timestamp
+        self._last_update = time.monotonic()
+        self._attr_native_value = self._convert(value)
+        self.async_write_ha_state()
 
     @callback
     def update_meta(self, meta: dict[str, Any]) -> None:
-        """Update sensor metadata from a SignalK meta delta."""
+        """Update metadata for this sensor."""
         self._meta.update(meta)
+        sk_units = meta.get("units", self._meta.get("units", ""))
+        if sk_units:
+            self._mapping = get_sensor_mapping(self._sk_path, sk_units)
 
-        # Re-check mapping with potentially new units
-        sk_units = self._meta.get("units")
-        self._mapping = get_sensor_mapping(self._path, sk_units)
-
-        # Update display name if meta provides one
-        display_name = meta.get("displayName") or meta.get("longName")
-        if display_name:
-            self._attr_name = display_name
+    @callback
+    def set_enabled(self, enabled: bool) -> None:
+        """Set the entity enabled state (from service call)."""
+        self._attr_entity_registry_enabled_default = enabled
 
     async def async_added_to_hass(self) -> None:
-        """Run when entity is added to HA."""
-        await super().async_added_to_hass()
+        """Mark entity as ready when added to HA."""
         self._ready = True
 
     async def async_will_remove_from_hass(self) -> None:
-        """Run when entity is about to be removed from HA."""
-        await super().async_will_remove_from_hass()
+        """Mark entity as not ready when removed."""
         self._ready = False
 
 
 class SignalKConnectionSensor(SensorEntity):
-    """Diagnostic sensor showing the connection status to SignalK."""
+    """Diagnostic sensor showing SignalK connection status."""
 
     _attr_should_poll = False
     _attr_has_entity_name = True
@@ -279,13 +233,12 @@ class SignalKConnectionSensor(SensorEntity):
         entity_prefix: str,
         device_info: DeviceInfo,
     ) -> None:
-        """Initialize the connection status sensor."""
-        self._attr_unique_id = f"{DOMAIN}_{entity_prefix}_connection_status"
-        self.entity_id = f"sensor.{entity_prefix}_connection_status"
+        """Initialize."""
+        self._attr_unique_id = f"{entity_prefix}_connection_status"
         self._attr_name = "Connection Status"
-        self._attr_icon = "mdi:connection"
-        self._attr_native_value = "disconnected"
+        self._attr_icon = "mdi:lan-connect"
         self._attr_device_info = device_info
+        self._attr_native_value = "disconnected"
 
     @callback
     def set_status(self, status: str) -> None:
@@ -296,7 +249,7 @@ class SignalKConnectionSensor(SensorEntity):
 
 
 class SignalKServerVersionSensor(SensorEntity):
-    """Diagnostic sensor showing the SignalK server version."""
+    """Diagnostic sensor showing SignalK server version."""
 
     _attr_should_poll = False
     _attr_has_entity_name = True
@@ -307,13 +260,12 @@ class SignalKServerVersionSensor(SensorEntity):
         entity_prefix: str,
         device_info: DeviceInfo,
     ) -> None:
-        """Initialize the server version sensor."""
-        self._attr_unique_id = f"{DOMAIN}_{entity_prefix}_server_version"
-        self.entity_id = f"sensor.{entity_prefix}_server_version"
+        """Initialize."""
+        self._attr_unique_id = f"{entity_prefix}_server_version"
         self._attr_name = "Server Version"
         self._attr_icon = "mdi:information-outline"
-        self._attr_native_value = "unknown"
         self._attr_device_info = device_info
+        self._attr_native_value = "unknown"
 
     @callback
     def set_version(self, version: str) -> None:

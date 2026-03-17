@@ -1,23 +1,15 @@
 {
-  "title": "SignalK Bridge",
   "config": {
-    "abort": {
-      "already_configured": "This SignalK server is already configured."
-    },
-    "error": {
-      "cannot_connect": "Cannot connect to SignalK server. Please check the URL and ensure the server is running.",
-      "auth_failed": "Authentication failed. Please approve the access request in the SignalK Admin UI and try again."
-    },
     "step": {
       "user": {
-        "title": "SignalK Bridge Setup",
-        "description": "Checking for SignalK HA App..."
+        "title": "SignalK Bridge",
+        "description": "Checking for SignalK addon..."
       },
       "choose_server": {
-        "title": "SignalK Server Detected",
-        "description": "A SignalK App was detected and is running on this system. Would you like to use it?",
+        "title": "Choose SignalK Server",
+        "description": "A SignalK addon was detected on this system. Would you like to use it?",
         "data": {
-          "use_addon": "Use the installed SignalK App"
+          "use_addon": "Use installed SignalK addon"
         }
       },
       "manual_url": {
@@ -28,62 +20,158 @@
         }
       },
       "auth": {
-        "title": "Authorize with SignalK",
-        "description": "An access request has been sent to the SignalK server at {base_url}.\n\nPlease open the SignalK Admin UI → Security → Access Requests and **approve** the request from \"Home Assistant SignalK Bridge\".\n\nOnce approved, click Submit below.",
-        "data": {}
+        "title": "Authentication",
+        "description": "Please approve the access request in the SignalK Admin UI at {base_url}. Go to Security → Access Requests and approve the Home Assistant request, then click Submit."
       },
       "prefix": {
         "title": "Entity Prefix",
-        "description": "Choose a prefix for entity IDs created by this integration. For example, with prefix 'signalk', a sensor for navigation.speedOverGround will have entity ID 'sensor.signalk_navigation_speedoverground'.",
+        "description": "Choose a prefix for entity IDs (e.g., 'signalk' → sensor.signalk_speed_over_ground).",
         "data": {
-          "entity_prefix": "Entity ID prefix"
+          "entity_prefix": "Entity ID Prefix"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to SignalK server. Check the URL and ensure the server is running.",
+      "auth_failed": "Authentication failed. Please approve the access request in the SignalK Admin UI and try again."
+    },
+    "abort": {
+      "already_configured": "This SignalK server is already configured."
     }
   },
   "options": {
-    "error": {
-      "cannot_connect": "Cannot connect to SignalK server at the provided URL."
-    },
     "step": {
       "init": {
-        "title": "SignalK Bridge Options",
-        "description": "Configure the SignalK Bridge connection.",
+        "title": "SignalK Bridge Settings",
+        "description": "Configure the integration behavior. The publish profile controls how frequently sensor states are updated in Home Assistant.",
         "data": {
           "base_url": "SignalK Server URL",
-          "entity_prefix": "Entity ID prefix"
+          "entity_prefix": "Entity ID Prefix",
+          "enable_new_sensors_by_default": "Enable new sensors by default",
+          "publish_profile": "Publish Profile",
+          "log_ignored_paths": "Log ignored/unsupported paths (debug)",
+          "create_diagnostic_entities": "Create diagnostic entities (connection status, server version)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to SignalK server at the new URL."
     }
   },
   "services": {
     "put_value": {
-      "name": "PUT value to SignalK",
-      "description": "Send a PUT request to a SignalK path for vessel self. Use this to control devices (e.g. switch a light, set autopilot heading).",
+      "name": "Put Value",
+      "description": "Send a PUT request to a SignalK path for vessel self.",
       "fields": {
         "path": {
-          "name": "Path",
-          "description": "The SignalK path to PUT the value to (e.g. 'electrical.switches.anchorLight.state')."
+          "name": "SignalK Path",
+          "description": "The SignalK path to write to."
         },
         "value": {
           "name": "Value",
-          "description": "The value to set. Can be a number, string, boolean, or object."
+          "description": "The value to set."
         }
       }
     },
     "post_delta": {
-      "name": "POST delta to SignalK",
-      "description": "Send a delta update for a SignalK path for vessel self. Use this to publish sensor data back to SignalK.",
+      "name": "Post Delta",
+      "description": "Send a delta update for a SignalK path for vessel self.",
       "fields": {
         "path": {
-          "name": "Path",
-          "description": "The SignalK path to send the delta for (e.g. 'environment.inside.cabin.temperature')."
+          "name": "SignalK Path",
+          "description": "The SignalK path to update."
         },
         "value": {
           "name": "Value",
-          "description": "The value to send. Must be in SI units as per the SignalK specification."
+          "description": "The value to publish."
         }
       }
+    },
+    "set_domain_policy": {
+      "name": "Set Domain Policy",
+      "description": "Update the publish policy for a SignalK domain.",
+      "fields": {
+        "domain": {
+          "name": "Domain",
+          "description": "The SignalK domain to configure."
+        },
+        "min_interval_seconds": {
+          "name": "Minimum Interval",
+          "description": "Minimum seconds between state updates."
+        },
+        "max_interval_seconds": {
+          "name": "Maximum Interval",
+          "description": "Maximum seconds before forced refresh."
+        },
+        "deadband": {
+          "name": "Deadband",
+          "description": "Absolute change threshold for numeric values."
+        },
+        "enabled_by_default": {
+          "name": "Enabled By Default",
+          "description": "Whether new entities in this domain start enabled."
+        }
+      }
+    },
+    "reset_domain_policy": {
+      "name": "Reset Domain Policy",
+      "description": "Reset a domain's policy to profile defaults.",
+      "fields": {
+        "domain": {
+          "name": "Domain",
+          "description": "The SignalK domain to reset."
+        }
+      }
+    },
+    "set_discovery_defaults": {
+      "name": "Set Discovery Defaults",
+      "description": "Update global discovery and publish settings.",
+      "fields": {
+        "enable_new_sensors_by_default": {
+          "name": "Enable New Sensors",
+          "description": "Whether newly discovered sensors start enabled."
+        },
+        "publish_profile": {
+          "name": "Publish Profile",
+          "description": "The base publish profile (conservative, balanced, realtime)."
+        },
+        "log_ignored_paths": {
+          "name": "Log Ignored Paths",
+          "description": "Log paths classified as unsupported."
+        }
+      }
+    },
+    "rescan_paths": {
+      "name": "Rescan Paths",
+      "description": "Rescan all known paths from the in-memory value store."
+    },
+    "reclassify_paths": {
+      "name": "Reclassify Paths",
+      "description": "Re-run the classifier on all known paths."
+    },
+    "enable_entities": {
+      "name": "Enable Entities",
+      "description": "Enable one or more SignalK entities.",
+      "fields": {
+        "entity_ids": {
+          "name": "Entity IDs",
+          "description": "Entity ID or list of entity IDs to enable."
+        }
+      }
+    },
+    "disable_entities": {
+      "name": "Disable Entities",
+      "description": "Disable one or more SignalK entities.",
+      "fields": {
+        "entity_ids": {
+          "name": "Entity IDs",
+          "description": "Entity ID or list of entity IDs to disable."
+        }
+      }
+    },
+    "dump_runtime_state": {
+      "name": "Dump Runtime State",
+      "description": "Dump current runtime state to log and fire an event."
     }
   }
 }

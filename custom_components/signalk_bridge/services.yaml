@@ -1,25 +1,237 @@
 put_value:
+  name: Put Value
+  description: >-
+    Send a PUT request to a SignalK path for vessel self.
+    Use this to control devices or set values on the SignalK server.
   fields:
     path:
+      name: SignalK Path
+      description: "The SignalK path (e.g., electrical.switches.bank1.1.state)"
       required: true
-      example: "electrical.switches.anchorLight.state"
+      example: "electrical.switches.bank1.1.state"
       selector:
         text:
     value:
+      name: Value
+      description: "The value to set (string, number, boolean, or object)"
       required: true
-      example: 1
+      example: "1"
       selector:
         object:
 
 post_delta:
+  name: Post Delta
+  description: >-
+    Send a delta update for a SignalK path for vessel self.
+    Prefers WebSocket delivery, falls back to REST PUT.
   fields:
     path:
+      name: SignalK Path
+      description: "The SignalK path to update"
       required: true
-      example: "environment.inside.cabin.temperature"
+      example: "environment.inside.temperature"
       selector:
         text:
     value:
+      name: Value
+      description: "The value to publish"
       required: true
-      example: 295.15
+      example: "293.15"
       selector:
         object:
+
+set_domain_policy:
+  name: Set Domain Policy
+  description: >-
+    Update the publish policy for a SignalK domain.
+    Controls how frequently sensor state updates are written to Home Assistant.
+  fields:
+    domain:
+      name: Domain
+      description: >-
+        The SignalK domain to configure. Options: alarm, position, navigation,
+        wind, environment, tank, battery_dc, inverter_ac, engine_propulsion,
+        bilge_pump, watermaker, communications, time, status_metadata.
+      required: true
+      example: "navigation"
+      selector:
+        select:
+          options:
+            - alarm
+            - position
+            - navigation
+            - wind
+            - environment
+            - tank
+            - battery_dc
+            - inverter_ac
+            - engine_propulsion
+            - bilge_pump
+            - watermaker
+            - communications
+            - time
+            - status_metadata
+    min_interval_seconds:
+      name: Minimum Interval (seconds)
+      description: >-
+        Minimum seconds between HA state writes.
+        Updates within this window are coalesced.
+      required: false
+      example: "2.0"
+      selector:
+        number:
+          min: 0.0
+          max: 3600.0
+          step: 0.1
+          mode: box
+          unit_of_measurement: seconds
+    max_interval_seconds:
+      name: Maximum Interval (seconds)
+      description: >-
+        Maximum seconds before a forced refresh (heartbeat).
+        Ensures entities stay fresh even when values don't change.
+      required: false
+      example: "60.0"
+      selector:
+        number:
+          min: 1.0
+          max: 7200.0
+          step: 1.0
+          mode: box
+          unit_of_measurement: seconds
+    deadband:
+      name: Deadband Threshold
+      description: >-
+        Absolute change threshold for numeric values.
+        Updates smaller than this are suppressed until max_interval.
+        Set to 0 to publish on any change.
+      required: false
+      example: "0.5"
+      selector:
+        number:
+          min: 0.0
+          max: 1000.0
+          step: 0.01
+          mode: box
+    enabled_by_default:
+      name: Enabled By Default
+      description: >-
+        Whether new entities discovered in this domain should start enabled.
+      required: false
+      selector:
+        boolean:
+
+reset_domain_policy:
+  name: Reset Domain Policy
+  description: >-
+    Reset a domain's publish policy to the current profile defaults
+    (conservative, balanced, or realtime).
+  fields:
+    domain:
+      name: Domain
+      description: "The SignalK domain to reset"
+      required: true
+      example: "navigation"
+      selector:
+        select:
+          options:
+            - alarm
+            - position
+            - navigation
+            - wind
+            - environment
+            - tank
+            - battery_dc
+            - inverter_ac
+            - engine_propulsion
+            - bilge_pump
+            - watermaker
+            - communications
+            - time
+            - status_metadata
+
+set_discovery_defaults:
+  name: Set Discovery Defaults
+  description: >-
+    Update the global discovery and publish settings.
+    Changes take effect immediately without restarting.
+  fields:
+    enable_new_sensors_by_default:
+      name: Enable New Sensors By Default
+      description: >-
+        When true, newly discovered sensors are created enabled.
+        When false (default), new sensors start disabled.
+      required: false
+      selector:
+        boolean:
+    publish_profile:
+      name: Publish Profile
+      description: >-
+        Switch the base publish profile. This resets all domain policies
+        to the new profile's defaults. Options: conservative, balanced, realtime.
+      required: false
+      example: "conservative"
+      selector:
+        select:
+          options:
+            - conservative
+            - balanced
+            - realtime
+    log_ignored_paths:
+      name: Log Ignored Paths
+      description: >-
+        When true, paths classified as unsupported/ignored are logged
+        for debugging.
+      required: false
+      selector:
+        boolean:
+
+rescan_paths:
+  name: Rescan Paths
+  description: >-
+    Rescan all known paths from the in-memory value store.
+    Discovers and classifies any new paths not yet processed.
+
+reclassify_paths:
+  name: Reclassify Paths
+  description: >-
+    Re-run the classifier on all known paths.
+    Useful after the classifier rules have been updated.
+
+enable_entities:
+  name: Enable Entities
+  description: >-
+    Enable one or more SignalK entities by entity ID.
+  fields:
+    entity_ids:
+      name: Entity IDs
+      description: "Entity ID or list of entity IDs to enable"
+      required: true
+      example: "sensor.signalk_speed_over_ground"
+      selector:
+        entity:
+          multiple: true
+          integration: signalk_bridge
+
+disable_entities:
+  name: Disable Entities
+  description: >-
+    Disable one or more SignalK entities by entity ID.
+  fields:
+    entity_ids:
+      name: Entity IDs
+      description: "Entity ID or list of entity IDs to disable"
+      required: true
+      example: "sensor.signalk_navigation_datetime"
+      selector:
+        entity:
+          multiple: true
+          integration: signalk_bridge
+
+dump_runtime_state:
+  name: Dump Runtime State
+  description: >-
+    Dump the current runtime state to the log and fire a
+    signalk_bridge_runtime_state event. Includes connection status,
+    publish policies, classified paths, ignored paths, and sensor counts.
+    Useful for debugging and troubleshooting.

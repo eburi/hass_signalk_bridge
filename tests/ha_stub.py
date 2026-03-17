@@ -6,6 +6,7 @@ This module is loaded by conftest.py before any test imports.
 
 import sys
 import types
+from enum import StrEnum  # Python 3.11+
 from unittest.mock import MagicMock
 
 # ---------------------------------------------------------------------------
@@ -24,10 +25,6 @@ def _make_module(name: str, attrs: dict | None = None) -> types.ModuleType:
 # ---------------------------------------------------------------------------
 # homeassistant.const  (enums / constants used by integration)
 # ---------------------------------------------------------------------------
-
-class _StrEnum(str):
-    """Minimal StrEnum stand-in."""
-    pass
 
 # Unit classes — each just holds class-level string constants
 class UnitOfTemperature:
@@ -76,6 +73,7 @@ class EntityCategory:
 
 class Platform:
     SENSOR = "sensor"
+    DEVICE_TRACKER = "device_tracker"
 
 EVENT_HOMEASSISTANT_STOP = "homeassistant_stop"
 
@@ -137,6 +135,7 @@ class SensorEntity:
     _attr_icon = None
     _attr_suggested_display_precision = None
     _attr_entity_category = None
+    _attr_entity_registry_enabled_default = True
     entity_id = None
     hass = None
 
@@ -167,6 +166,63 @@ _make_module("homeassistant.components.sensor", {
 })
 _make_module("homeassistant.components.hassio", {
     "async_get_addon_info": MagicMock(),
+})
+
+
+# ---------------------------------------------------------------------------
+# homeassistant.components.device_tracker
+# ---------------------------------------------------------------------------
+
+class SourceType:
+    """Source type enum stand-in."""
+    GPS = "gps"
+    ROUTER = "router"
+    BLUETOOTH = "bluetooth"
+    BLUETOOTH_LE = "bluetooth_le"
+
+_make_module("homeassistant.components.device_tracker", {
+    "SourceType": SourceType,
+})
+
+
+class TrackerEntity:
+    """Minimal TrackerEntity stand-in for device_tracker."""
+    _attr_should_poll = True
+    _attr_has_entity_name = False
+    _attr_icon = None
+    _attr_unique_id = None
+    _attr_name = None
+    _attr_device_info = None
+    entity_id = None
+    hass = None
+
+    @property
+    def source_type(self):
+        return SourceType.GPS
+
+    @property
+    def latitude(self):
+        return None
+
+    @property
+    def longitude(self):
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        return {}
+
+    def async_write_ha_state(self):
+        pass
+
+    async def async_added_to_hass(self):
+        pass
+
+    async def async_will_remove_from_hass(self):
+        pass
+
+_make_module("homeassistant.components.device_tracker.config_entry", {
+    "TrackerEntity": TrackerEntity,
 })
 
 
@@ -307,8 +363,17 @@ class _CV:
     def string(val):
         return str(val)
 
+    @staticmethod
+    def boolean(val):
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, str):
+            return val.lower() in ("true", "yes", "1", "on")
+        return bool(val)
+
 _make_module("homeassistant.helpers.config_validation", {
     "string": _CV.string,
+    "boolean": _CV.boolean,
 })
 
 # For `import homeassistant.helpers.config_validation as cv`
@@ -337,4 +402,179 @@ _make_module("homeassistant.helpers.entity_platform", {
 
 _make_module("homeassistant.helpers.typing", {
     "ConfigType": dict,
+})
+
+
+# ---------------------------------------------------------------------------
+# voluptuous — minimal stub so service schemas can be parsed
+# ---------------------------------------------------------------------------
+
+class _VolSchema:
+    """Minimal voluptuous.Schema stand-in."""
+    def __init__(self, schema=None, extra=None):
+        self._schema = schema
+
+    def __call__(self, data):
+        return data
+
+    def extend(self, schema):
+        return _VolSchema(schema)
+
+
+class _VolMarker:
+    """Stand-in for vol.Required / vol.Optional — acts as dict key."""
+    def __init__(self, key, default=None, description=None):
+        self.key = key
+        self.default = default
+    def __hash__(self):
+        return hash(self.key)
+    def __eq__(self, other):
+        if isinstance(other, _VolMarker):
+            return self.key == other.key
+        return self.key == other
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.key!r})"
+
+
+class _Required(_VolMarker):
+    pass
+
+
+class _Optional(_VolMarker):
+    pass
+
+
+def _vol_any(*args):
+    """vol.Any() — just returns the first validator or identity."""
+    def validator(val):
+        return val
+    return validator
+
+
+def _vol_coerce(tp):
+    """vol.Coerce(type) — returns a coercing validator."""
+    def validator(val):
+        return tp(val)
+    return validator
+
+
+def _vol_in(container):
+    """vol.In(container) — returns a membership validator."""
+    def validator(val):
+        if val not in container:
+            raise ValueError(f"{val} not in {container}")
+        return val
+    return validator
+
+
+def _vol_all(*validators):
+    """vol.All() — chain validators."""
+    def validator(val):
+        for v in validators:
+            val = v(val)
+        return val
+    return validator
+
+
+vol_mod = _make_module("voluptuous", {
+    "Schema": _VolSchema,
+    "Required": _Required,
+    "Optional": _Optional,
+    "Any": _vol_any,
+    "All": _vol_all,
+    "Coerce": _vol_coerce,
+    "In": _vol_in,
+    "ALLOW_EXTRA": "ALLOW_EXTRA",
+})
+
+
+# ---------------------------------------------------------------------------
+# httpx — minimal stub for signalk_client imports
+# ---------------------------------------------------------------------------
+
+class _Response:
+    def __init__(self, status_code=200, json_data=None, text=""):
+        self.status_code = status_code
+        self._json_data = json_data or {}
+        self.text = text
+        self.headers = {}
+
+    def json(self):
+        return self._json_data
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTP {self.status_code}")
+
+
+class _AsyncClient:
+    """Minimal httpx.AsyncClient stand-in."""
+    def __init__(self, **kwargs):
+        pass
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        pass
+
+    async def get(self, url, **kwargs):
+        return _Response()
+
+    async def post(self, url, **kwargs):
+        return _Response()
+
+    async def put(self, url, **kwargs):
+        return _Response()
+
+
+_make_module("httpx", {
+    "AsyncClient": _AsyncClient,
+    "Response": _Response,
+    "HTTPStatusError": Exception,
+    "RequestError": Exception,
+    "ConnectError": Exception,
+    "TimeoutException": Exception,
+})
+
+
+# ---------------------------------------------------------------------------
+# websockets — minimal stub for signalk_client imports
+# ---------------------------------------------------------------------------
+
+class _WebSocketClientProtocol:
+    """Minimal websocket connection stand-in."""
+    async def recv(self):
+        return "{}"
+
+    async def send(self, data):
+        pass
+
+    async def close(self):
+        pass
+
+    async def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        raise StopAsyncIteration
+
+
+async def _ws_connect(url, **kwargs):
+    return _WebSocketClientProtocol()
+
+
+class _ConnectionClosed(Exception):
+    pass
+
+
+_ws_mod = _make_module("websockets", {
+    "connect": _ws_connect,
+})
+_make_module("websockets.exceptions", {
+    "ConnectionClosed": _ConnectionClosed,
+    "ConnectionClosedError": _ConnectionClosed,
+    "ConnectionClosedOK": _ConnectionClosed,
+    "InvalidHandshake": Exception,
+    "InvalidStatusCode": Exception,
 })
